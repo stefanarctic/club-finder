@@ -1,0 +1,170 @@
+.cf-event-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  gap: var(--cf-space-4);
+  padding: var(--cf-space-3);
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-bg-surface);
+  border: 1px solid var(--cf-border-subtle);
+  box-shadow: var(--cf-elevation-1);
+  transition:
+    background-color var(--cf-duration-fast) var(--cf-ease-out),
+    border-color var(--cf-duration-base) var(--cf-ease-out),
+    box-shadow var(--cf-duration-base) var(--cf-ease-out),
+    transform var(--cf-duration-base) var(--cf-ease-out);
+}
+
+.cf-event-card:hover {
+  background: var(--cf-bg-raised);
+  border-color: var(--cf-border-default);
+}
+
+.cf-event-card:has(.cf-event-card__link:focus-visible) {
+  box-shadow: var(--cf-focus-ring);
+}
+
+.cf-event-card__cover {
+  aspect-ratio: 1;
+  border-radius: var(--cf-radius-md);
+  align-self: start;
+}
+
+.cf-event-card__flag {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 1;
+}
+
+.cf-event-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding-block: 2px;
+}
+
+.cf-event-card__time {
+  font-size: var(--cf-text-xs);
+  font-weight: 560;
+  color: var(--cf-text-tertiary);
+  letter-spacing: 0.02em;
+}
+
+.cf-event-card--tonight .cf-event-card__time {
+  color: var(--cf-tonight);
+}
+
+.cf-event-card__name {
+  font-size: var(--cf-text-lg);
+  line-height: 1.2;
+}
+
+.cf-event-card__link {
+  text-align: start;
+  outline: none;
+}
+
+/* Whole card is the hit area; the heading stays the accessible name. */
+.cf-event-card__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.cf-event-card__venue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cf-space-2);
+  font-size: var(--cf-text-sm);
+  color: var(--cf-text-secondary);
+}
+
+.cf-event-card__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--cf-text-xs);
+  color: var(--cf-text-accent);
+}
+
+.cf-event-card__more svg {
+  width: 12px;
+  height: 12px;
+}
+
+.cf-event-card__reason {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 6px;
+  margin-top: var(--cf-space-1);
+  font-size: var(--cf-text-xs);
+  color: var(--cf-text-secondary);
+}
+
+.cf-event-card__sep {
+  color: var(--cf-uv-400);
+}
+
+.cf-event-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-space-1);
+  margin-top: var(--cf-space-2);
+}
+
+/* Selected (from a pin tap): lit edge + soft UV wash. */
+.cf-event-card--selected {
+  background:
+    linear-gradient(90deg, rgb(132 69 255 / 0.12), transparent 60%),
+    var(--cf-bg-raised);
+  border-color: var(--cf-border-accent);
+  box-shadow:
+    var(--cf-elevation-2),
+    0 0 0 1px var(--cf-border-accent),
+    0 0 28px -6px rgb(132 69 255 / 0.5);
+}
+
+.cf-event-card--selected::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 18%;
+  bottom: 18%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--cf-uv-300);
+  box-shadow: 0 0 12px var(--cf-uv-400);
+}
+
+.cf-event-card--live .cf-event-card__cover {
+  filter: saturate(0.7) brightness(0.85);
+}
+
+/* ── Skeleton ───────────────────────────────────────────────────────────── */
+
+.cf-skeleton {
+  display: block;
+  border-radius: var(--cf-radius-xs);
+  background: linear-gradient(
+      100deg,
+      var(--cf-bg-overlay) 30%,
+      var(--cf-bg-hover) 50%,
+      var(--cf-bg-overlay) 70%
+    )
+    0 0 / 200% 100%;
+  animation: cf-shimmer 1.6s linear infinite;
+}
+
+.cf-event-card--skeleton .cf-event-card__body {
+  gap: var(--cf-space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-skeleton {
+    animation: none;
+  }
+}

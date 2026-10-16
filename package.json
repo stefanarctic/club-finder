@@ -1,0 +1,34 @@
+{
+  "name": "club-finder",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "icons": "pwa-assets-generator"
+  },
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.1.0",
+    "@fontsource-variable/instrument-sans": "^5.1.0",
+    "@fontsource-variable/jetbrains-mono": "^5.1.0",
+    "lucide-react": "^0.460.0",
+    "maplibre-gl": "^6.14.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.18.4"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.16",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vite-pwa/assets-generator": "^2.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "^5.6.0",
+    "vite": "^7.0.0",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.5"
+  }
+}

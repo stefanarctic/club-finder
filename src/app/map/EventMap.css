@@ -1,0 +1,94 @@
+.app-map {
+  position: relative;
+  overflow: hidden;
+  background: var(--cf-ink-1);
+  isolation: isolate;
+}
+
+.app-map__canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* Darkens the edges so floating controls and pins read against any tile. */
+.app-map__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 45%, transparent 45%, rgb(5 4 7 / 0.7));
+}
+
+.app-map .maplibregl-canvas-container,
+.app-map .maplibregl-canvas {
+  outline: none;
+  background: var(--cf-ink-1);
+}
+
+.app-map .maplibregl-marker {
+  z-index: 2;
+}
+
+.app-map__top,
+.app-map__bottom {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  gap: var(--cf-space-2);
+  pointer-events: none;
+}
+
+.app-map__top > *,
+.app-map__bottom > * {
+  pointer-events: auto;
+}
+
+.app-map__top {
+  top: calc(var(--cf-space-3) + env(safe-area-inset-top));
+  left: var(--cf-space-3);
+  right: var(--cf-space-3);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-map__bottom {
+  right: var(--cf-space-3);
+  bottom: var(--app-map-bottom-inset, var(--cf-space-4));
+}
+
+/* ── Attribution, restyled for the night palette ─────────────────────────── */
+
+.app-map .maplibregl-ctrl-bottom-left,
+.app-map .maplibregl-ctrl-bottom-right {
+  z-index: 4;
+}
+
+.app-map .maplibregl-ctrl-bottom-right {
+  right: auto;
+  left: 0;
+  bottom: var(--app-map-bottom-inset, 0);
+}
+
+.app-map .maplibregl-ctrl-attrib {
+  background: var(--cf-bg-glass);
+  color: var(--cf-text-tertiary);
+  font-family: var(--cf-font-body);
+  font-size: var(--cf-text-2xs);
+}
+
+.app-map .maplibregl-ctrl-attrib a {
+  color: var(--cf-text-secondary);
+}
+
+.app-map .maplibregl-ctrl-attrib.maplibregl-compact {
+  margin: 0 0 var(--cf-space-2) var(--cf-space-2);
+  border-radius: var(--cf-radius-pill);
+}
+
+.app-map .maplibregl-ctrl-attrib-button {
+  filter: invert(0.8);
+}
+
+.app-map .maplibregl-ctrl-attrib.maplibregl-compact-show {
+  border-radius: var(--cf-radius-sm);
+}

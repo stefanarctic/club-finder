@@ -1,0 +1,242 @@
+/*
+ * Phone: the map holds the top ~42% and stays put; the list sheet scrolls beneath it.
+ * Desktop: map is the left half, the list (or an open event) scrolls on the right.
+ */
+
+.home {
+  --home-sheet-overlap: 24px;
+  position: relative;
+  display: grid;
+  grid-template-rows: var(--cf-map-height-mobile) minmax(0, 1fr);
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.home__map {
+  --app-map-bottom-inset: calc(var(--home-sheet-overlap) + var(--cf-space-3));
+  grid-row: 1;
+  grid-column: 1;
+}
+
+.home__city {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 var(--cf-space-4) 0 var(--cf-space-3);
+  border-radius: var(--cf-radius-pill);
+  background: var(--cf-bg-glass);
+  border: 1px solid var(--cf-border-default);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--cf-elevation-2);
+  font-family: var(--cf-font-display);
+  font-stretch: 85%;
+  font-weight: 700;
+  font-size: var(--cf-text-md);
+}
+
+.home__city svg {
+  width: 16px;
+  height: 16px;
+  color: var(--cf-uv-300);
+}
+
+.home__sheet {
+  position: relative;
+  z-index: var(--cf-z-sticky);
+  grid-row: 2;
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cf-space-4);
+  margin-top: calc(var(--home-sheet-overlap) * -1);
+  padding: var(--cf-space-2) var(--cf-space-3) calc(var(--cf-space-10) + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--cf-radius-xl) var(--cf-radius-xl) 0 0;
+  background: var(--cf-bg-app);
+  border-top: 1px solid var(--cf-border-default);
+  box-shadow: 0 -20px 40px rgb(0 0 0 / 0.6);
+  scrollbar-width: thin;
+  scrollbar-color: var(--cf-ink-5) transparent;
+}
+
+.home__grabber {
+  flex: none;
+  align-self: center;
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--cf-border-strong);
+}
+
+.home__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--cf-space-1) var(--cf-space-3);
+  padding-inline: var(--cf-space-1);
+}
+
+.home__summary {
+  font-size: var(--cf-text-xs);
+  color: var(--cf-text-tertiary);
+}
+
+.home__summary .cf-mono {
+  color: var(--cf-text-secondary);
+}
+
+.home__footer {
+  margin-top: var(--cf-space-6);
+  padding-top: var(--cf-space-4);
+  border-top: 1px solid var(--cf-border-subtle);
+  font-size: var(--cf-text-xs);
+  color: var(--cf-text-tertiary);
+  text-align: center;
+}
+
+/* ── Controls ───────────────────────────────────────────────────────────── */
+
+.home-controls {
+  display: grid;
+  gap: var(--cf-space-3);
+}
+
+.home-controls__range {
+  width: 100%;
+}
+
+.home-controls__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-space-2);
+}
+
+.home-controls__badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding-inline: 5px;
+  border-radius: var(--cf-radius-pill);
+  background: var(--cf-accent-default);
+  color: var(--cf-text-on-accent);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.home-controls__panel {
+  display: grid;
+  gap: var(--cf-space-5);
+  padding: var(--cf-space-4);
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-bg-surface);
+  border: 1px solid var(--cf-border-subtle);
+  animation: cf-rise var(--cf-duration-base) var(--cf-ease-out);
+}
+
+.home-controls__group {
+  display: grid;
+  gap: var(--cf-space-2);
+}
+
+.home-controls__label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cf-space-2);
+  font-size: var(--cf-text-sm);
+  font-weight: 600;
+  color: var(--cf-text-secondary);
+}
+
+.home-controls__count {
+  margin-left: auto;
+  font-size: var(--cf-text-xs);
+  color: var(--cf-text-accent);
+}
+
+.home-controls__hint {
+  font-weight: 400;
+  font-size: var(--cf-text-xs);
+  color: var(--cf-text-tertiary);
+}
+
+.home-controls__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-space-2);
+}
+
+/* ── List ───────────────────────────────────────────────────────────────── */
+
+.home-list {
+  display: grid;
+  gap: var(--cf-space-3);
+}
+
+.home-list + .home-list {
+  margin-top: var(--cf-space-4);
+}
+
+.home-list__items {
+  display: grid;
+  gap: var(--cf-space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.home-list__item {
+  scroll-margin-block: var(--cf-space-4);
+}
+
+@media (max-width: 420px) {
+  .home-list .cf-event-card {
+    grid-template-columns: 84px 1fr;
+    gap: var(--cf-space-3);
+  }
+
+  .home .cf-section-header__title {
+    font-size: var(--cf-text-2xl);
+  }
+}
+
+/* ── Desktop ────────────────────────────────────────────────────────────── */
+
+.home:has(.event-panel) .home__sheet {
+  visibility: hidden;
+}
+
+@media (min-width: 900px) {
+  .home {
+    --home-sheet-overlap: 0px;
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr);
+  }
+
+  .home__map {
+    --app-map-bottom-inset: var(--cf-space-5);
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .home__sheet {
+    grid-row: 1;
+    grid-column: 2;
+    margin-top: 0;
+    padding: var(--cf-space-6) clamp(var(--cf-space-5), 3vw, var(--cf-space-10)) var(--cf-space-10);
+    border-radius: 0;
+    border-top: 0;
+    border-left: 1px solid var(--cf-border-default);
+    box-shadow: none;
+  }
+
+  .home__grabber {
+    display: none;
+  }
+}

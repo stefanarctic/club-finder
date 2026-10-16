@@ -1,0 +1,173 @@
+/*
+ * Club Finder — "Blacklight" night mode tokens.
+ *
+ * Two layers:
+ *   1. Primitives (--cf-ink-*, --cf-uv-*, ...) are raw values. Components never use them directly.
+ *   2. Semantic tokens (--cf-bg-*, --cf-text-*, --cf-accent-*, ...) carry meaning and are what components consume.
+ *
+ * "Tonight" is the product's one loud signal (same-day pins, the Tonight group, the card badge).
+ * Glow is reserved for it and for focus, so it keeps meaning something.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* ── Primitives: ink (violet-tinted blacks) ─────────────────────────── */
+  --cf-ink-0: #050407;
+  --cf-ink-1: #0a0910;
+  --cf-ink-2: #100e18;
+  --cf-ink-3: #171421;
+  --cf-ink-4: #201c2d;
+  --cf-ink-5: #2b2640;
+
+  /* ── Primitives: ultraviolet ────────────────────────────────────────── */
+  --cf-uv-50: #f4efff;
+  --cf-uv-100: #e6dbff;
+  --cf-uv-200: #cfb8ff;
+  --cf-uv-300: #b48fff;
+  --cf-uv-400: #9b68ff;
+  --cf-uv-500: #8445ff;
+  --cf-uv-600: #6e2bf0;
+  --cf-uv-700: #5a1fc7;
+  --cf-uv-800: #41168f;
+  --cf-uv-900: #2a0e5c;
+  --cf-uv-950: #16073a;
+
+  /* ── Primitives: neutrals for text ──────────────────────────────────── */
+  --cf-mist-100: #f5f2fb;
+  --cf-mist-300: #bab3cb;
+  --cf-mist-500: #857e99;
+  --cf-mist-700: #534d64;
+
+  /* ── Primitives: status (used sparingly, never decoratively) ────────── */
+  --cf-amber-300: #ffcb7a;
+  --cf-amber-500: #ffaa33;
+  --cf-rose-400: #ff6b8b;
+  --cf-mint-400: #5be3ae;
+
+  /* ── Semantic: backgrounds & surfaces ───────────────────────────────── */
+  --cf-bg-app: var(--cf-ink-0);
+  --cf-bg-surface: var(--cf-ink-1);
+  --cf-bg-raised: var(--cf-ink-2);
+  --cf-bg-overlay: var(--cf-ink-3);
+  --cf-bg-hover: var(--cf-ink-4);
+  --cf-bg-pressed: var(--cf-ink-5);
+  --cf-bg-scrim: rgb(5 4 7 / 0.72);
+  --cf-bg-glass: rgb(16 14 24 / 0.68);
+  --cf-bg-accent-soft: rgb(132 69 255 / 0.14);
+  --cf-bg-accent-softer: rgb(132 69 255 / 0.07);
+
+  /* ── Semantic: borders ──────────────────────────────────────────────── */
+  --cf-border-subtle: rgb(207 184 255 / 0.07);
+  --cf-border-default: rgb(207 184 255 / 0.12);
+  --cf-border-strong: rgb(207 184 255 / 0.22);
+  --cf-border-accent: rgb(155 104 255 / 0.55);
+
+  /* ── Semantic: text ─────────────────────────────────────────────────── */
+  --cf-text-primary: var(--cf-mist-100);   /* 18.5:1 on bg-app */
+  --cf-text-secondary: var(--cf-mist-300); /* 10.1:1 */
+  --cf-text-tertiary: var(--cf-mist-500);  /* 5.3:1 — still AA for body */
+  --cf-text-disabled: var(--cf-mist-700);
+  --cf-text-accent: var(--cf-uv-300);      /* 8.1:1 — accent-colored text */
+  --cf-text-on-accent: #ffffff;            /* 4.9:1 on accent-default */
+
+  /* ── Semantic: accent (interactive) ─────────────────────────────────── */
+  --cf-accent-default: var(--cf-uv-500);
+  --cf-accent-hover: var(--cf-uv-400);
+  --cf-accent-pressed: var(--cf-uv-600);
+  --cf-accent-muted: var(--cf-uv-800);
+
+  /* ── Semantic: tonight (same-day signal) ────────────────────────────── */
+  --cf-tonight: var(--cf-uv-200);
+  --cf-tonight-core: var(--cf-uv-400);
+  --cf-tonight-glow: 0 0 0 1.5px var(--cf-uv-200), 0 0 14px 2px rgb(155 104 255 / 0.65), 0 0 36px 6px rgb(132 69 255 / 0.28);
+  --cf-tonight-glow-soft: 0 0 0 1px rgb(207 184 255 / 0.55), 0 0 18px rgb(132 69 255 / 0.3);
+
+  /* ── Semantic: status ───────────────────────────────────────────────── */
+  --cf-warning: var(--cf-amber-300);
+  --cf-warning-bg: rgb(255 170 51 / 0.1);
+  --cf-warning-border: rgb(255 170 51 / 0.28);
+  --cf-danger: var(--cf-rose-400);
+  --cf-live: var(--cf-mint-400);
+
+  /* ── Typography ─────────────────────────────────────────────────────── */
+  --cf-font-display: 'Bricolage Grotesque Variable', 'Arial Narrow', sans-serif;
+  --cf-font-body: 'Instrument Sans Variable', 'Helvetica Neue', sans-serif;
+  --cf-font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --cf-text-2xs: 0.6875rem; /* 11 */
+  --cf-text-xs: 0.75rem;    /* 12 */
+  --cf-text-sm: 0.8125rem;  /* 13 */
+  --cf-text-md: 0.9375rem;  /* 15 — body */
+  --cf-text-lg: 1.0625rem;  /* 17 */
+  --cf-text-xl: 1.25rem;    /* 20 */
+  --cf-text-2xl: 1.5rem;    /* 24 */
+  --cf-text-3xl: 2rem;      /* 32 */
+  --cf-text-4xl: 2.75rem;   /* 44 */
+  --cf-text-5xl: 4rem;      /* 64 */
+  --cf-text-6xl: clamp(4rem, 11vw, 8.5rem);
+
+  --cf-leading-tight: 0.92;
+  --cf-leading-snug: 1.15;
+  --cf-leading-normal: 1.5;
+
+  --cf-tracking-display: -0.02em;
+  --cf-tracking-label: 0.08em;
+
+  --cf-display-stretch: 78%;
+
+  /* ── Spacing (4px base) ─────────────────────────────────────────────── */
+  --cf-space-0-5: 2px;
+  --cf-space-1: 4px;
+  --cf-space-2: 8px;
+  --cf-space-3: 12px;
+  --cf-space-4: 16px;
+  --cf-space-5: 20px;
+  --cf-space-6: 24px;
+  --cf-space-8: 32px;
+  --cf-space-10: 40px;
+  --cf-space-14: 56px;
+  --cf-space-18: 72px;
+  --cf-space-24: 96px;
+
+  /* ── Radii ──────────────────────────────────────────────────────────── */
+  --cf-radius-xs: 6px;
+  --cf-radius-sm: 10px;
+  --cf-radius-md: 14px;
+  --cf-radius-lg: 20px;
+  --cf-radius-xl: 28px;
+  --cf-radius-pill: 999px;
+
+  /* ── Elevation: shadows read poorly on black, so depth = top highlight + deep drop ── */
+  --cf-elevation-1: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 1px 2px rgb(0 0 0 / 0.6);
+  --cf-elevation-2: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 8px 24px -8px rgb(0 0 0 / 0.8);
+  --cf-elevation-3: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px -12px rgb(0 0 0 / 0.9), 0 0 0 1px var(--cf-border-default);
+  --cf-focus-ring: 0 0 0 2px var(--cf-bg-app), 0 0 0 4px var(--cf-uv-300);
+
+  /* ── Motion ─────────────────────────────────────────────────────────── */
+  --cf-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --cf-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --cf-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --cf-duration-instant: 90ms;
+  --cf-duration-fast: 160ms;
+  --cf-duration-base: 240ms;
+  --cf-duration-slow: 420ms;
+  --cf-duration-pulse: 2400ms;
+
+  /* ── Layout ─────────────────────────────────────────────────────────── */
+  --cf-map-height-mobile: 42vh;
+  --cf-tap-target: 44px;
+  --cf-z-map: 0;
+  --cf-z-sticky: 10;
+  --cf-z-overlay: 40;
+  --cf-z-toast: 60;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --cf-duration-instant: 0ms;
+    --cf-duration-fast: 0ms;
+    --cf-duration-base: 0ms;
+    --cf-duration-slow: 0ms;
+  }
+}

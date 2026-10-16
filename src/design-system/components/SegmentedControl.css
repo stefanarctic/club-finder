@@ -1,0 +1,54 @@
+.cf-segmented {
+  position: relative;
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--cf-radius-pill);
+  background: var(--cf-bg-surface);
+  border: 1px solid var(--cf-border-subtle);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.5);
+}
+
+.cf-segmented__thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  border-radius: var(--cf-radius-pill);
+  background: var(--cf-bg-hover);
+  border: 1px solid var(--cf-border-strong);
+  box-shadow: var(--cf-elevation-2);
+  transition:
+    transform var(--cf-duration-slow) var(--cf-ease-out),
+    width var(--cf-duration-slow) var(--cf-ease-out);
+}
+
+.cf-segmented__option {
+  position: relative;
+  z-index: 1;
+  flex: 1 0 auto;
+  padding-inline: var(--cf-space-4);
+  border-radius: var(--cf-radius-pill);
+  color: var(--cf-text-tertiary);
+  font-weight: 560;
+  white-space: nowrap;
+  transition: color var(--cf-duration-fast) var(--cf-ease-out);
+}
+
+.cf-segmented__option:hover {
+  color: var(--cf-text-secondary);
+}
+
+.cf-segmented__option[aria-checked='true'] {
+  color: var(--cf-text-primary);
+}
+
+.cf-segmented--sm .cf-segmented__option {
+  height: 28px;
+  font-size: var(--cf-text-xs);
+  padding-inline: var(--cf-space-3);
+}
+
+.cf-segmented--md .cf-segmented__option {
+  height: 36px;
+  font-size: var(--cf-text-sm);
+}

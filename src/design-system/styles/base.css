@@ -1,0 +1,168 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--cf-bg-app);
+  color: var(--cf-text-primary);
+  font-family: var(--cf-font-body);
+  font-size: var(--cf-text-md);
+  line-height: var(--cf-leading-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+a {
+  color: var(--cf-text-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--cf-focus-ring);
+}
+
+::selection {
+  background: var(--cf-uv-700);
+  color: var(--cf-text-primary);
+}
+
+/* ── Atmosphere: faint UV haze + film grain. Opt-in on a root container. ── */
+
+.cf-atmosphere {
+  position: relative;
+  isolation: isolate;
+}
+
+.cf-atmosphere::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 40rem at 85% -10%, rgb(110 43 240 / 0.16), transparent 60%),
+    radial-gradient(40rem 30rem at -10% 30%, rgb(65 22 143 / 0.18), transparent 65%);
+}
+
+.cf-atmosphere::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── Type roles ─────────────────────────────────────────────────────────── */
+
+.cf-display {
+  font-family: var(--cf-font-display);
+  font-stretch: var(--cf-display-stretch);
+  font-weight: 760;
+  line-height: var(--cf-leading-tight);
+  letter-spacing: var(--cf-tracking-display);
+  text-transform: uppercase;
+}
+
+.cf-heading {
+  font-family: var(--cf-font-display);
+  font-stretch: 88%;
+  font-weight: 680;
+  line-height: var(--cf-leading-snug);
+  letter-spacing: -0.01em;
+}
+
+.cf-label {
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-2xs);
+  font-weight: 560;
+  letter-spacing: var(--cf-tracking-label);
+  text-transform: uppercase;
+  color: var(--cf-text-tertiary);
+}
+
+.cf-mono {
+  font-family: var(--cf-font-mono);
+  font-feature-settings: 'zero' 0, 'tnum' 1;
+}
+
+.cf-muted {
+  color: var(--cf-text-secondary);
+}
+
+.cf-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@keyframes cf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cf-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+@keyframes cf-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

@@ -1,0 +1,112 @@
+.cf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cf-space-1);
+  height: 36px;
+  padding-inline: var(--cf-space-3) var(--cf-space-4);
+  border-radius: var(--cf-radius-pill);
+  border: 1px solid var(--cf-border-default);
+  background: var(--cf-bg-raised);
+  color: var(--cf-text-secondary);
+  font-size: var(--cf-text-sm);
+  font-weight: 560;
+  text-transform: lowercase;
+  transition:
+    background-color var(--cf-duration-fast) var(--cf-ease-out),
+    border-color var(--cf-duration-fast) var(--cf-ease-out),
+    color var(--cf-duration-fast) var(--cf-ease-out),
+    box-shadow var(--cf-duration-base) var(--cf-ease-out);
+}
+
+.cf-chip:hover:not(:disabled) {
+  color: var(--cf-text-primary);
+  border-color: var(--cf-border-strong);
+}
+
+.cf-chip:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.cf-chip__check {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-inline-start: -2px;
+}
+
+.cf-chip__check:empty {
+  width: 4px;
+}
+
+.cf-chip__check svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cf-chip--selected {
+  background: var(--cf-bg-accent-soft);
+  border-color: var(--cf-border-accent);
+  color: var(--cf-uv-100);
+  box-shadow: inset 0 0 12px rgb(132 69 255 / 0.18);
+}
+
+.cf-chip--selected .cf-chip__check {
+  color: var(--cf-uv-200);
+  animation: cf-chip-pop var(--cf-duration-base) var(--cf-ease-spring);
+}
+
+@keyframes cf-chip-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+
+/* ── Tag ────────────────────────────────────────────────────────────────── */
+
+.cf-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding-inline: var(--cf-space-2);
+  border-radius: var(--cf-radius-xs);
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-2xs);
+  font-weight: 560;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cf-tag--neutral {
+  background: var(--cf-bg-overlay);
+  color: var(--cf-text-secondary);
+}
+
+.cf-tag--accent {
+  background: var(--cf-bg-accent-soft);
+  color: var(--cf-uv-200);
+}
+
+.cf-tag--tonight {
+  background: var(--cf-uv-500);
+  color: var(--cf-text-on-accent);
+  box-shadow: 0 0 14px rgb(132 69 255 / 0.55);
+}
+
+.cf-tag--live {
+  background: rgb(91 227 174 / 0.12);
+  color: var(--cf-live);
+}
+
+.cf-tag--live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}

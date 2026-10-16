@@ -1,0 +1,140 @@
+.onb {
+  display: grid;
+  align-content: end;
+  gap: var(--cf-space-8);
+  width: 100%;
+  max-width: 460px;
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding: calc(var(--cf-space-10) + env(safe-area-inset-top)) var(--cf-space-6)
+    calc(var(--cf-space-8) + env(safe-area-inset-bottom));
+}
+
+.onb > * {
+  animation: cf-rise var(--cf-duration-slow) var(--cf-ease-out) both;
+}
+
+.onb > :nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.onb > :nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.onb > :nth-child(4) {
+  animation-delay: 180ms;
+}
+
+.onb--location {
+  grid-template-rows: 1fr auto auto;
+  background: radial-gradient(70% 40% at 50% 26%, rgb(110 43 240 / 0.26), transparent 70%);
+}
+
+.onb__art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 240px;
+}
+
+.onb__ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgb(207 184 255 / 0.14);
+}
+
+.onb__ring:nth-child(1) {
+  width: 96px;
+  height: 96px;
+}
+
+.onb__ring:nth-child(2) {
+  width: 180px;
+  height: 180px;
+  border-style: dashed;
+}
+
+.onb__ring:nth-child(3) {
+  width: 280px;
+  height: 280px;
+  border-color: rgb(207 184 255 / 0.07);
+}
+
+.onb__art .cf-pin {
+  transform: scale(1.9);
+  pointer-events: none;
+}
+
+.onb__copy {
+  display: grid;
+  gap: var(--cf-space-3);
+}
+
+.onb__eyebrow {
+  color: var(--cf-text-accent);
+}
+
+.onb__title {
+  font-size: clamp(2.75rem, 13vw, 3.75rem);
+}
+
+.onb__body {
+  color: var(--cf-text-secondary);
+}
+
+.onb__actions {
+  display: grid;
+  gap: var(--cf-space-2);
+}
+
+/* ── Interests ──────────────────────────────────────────────────────────── */
+
+.onb--interests {
+  align-content: center;
+}
+
+.onb__group {
+  display: grid;
+  gap: var(--cf-space-3);
+}
+
+.onb__group-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cf-space-2);
+  font-size: var(--cf-text-sm);
+  font-weight: 600;
+  color: var(--cf-text-secondary);
+}
+
+.onb__count {
+  margin-left: auto;
+  font-size: var(--cf-text-xs);
+  color: var(--cf-text-accent);
+}
+
+.onb__hint {
+  font-weight: 400;
+  color: var(--cf-text-tertiary);
+}
+
+.onb__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-space-2);
+}
+
+@media (min-width: 900px) {
+  .onb {
+    align-content: center;
+  }
+
+  .onb--location {
+    grid-template-rows: auto auto auto;
+  }
+
+  .onb__art {
+    min-height: 280px;
+  }
+}

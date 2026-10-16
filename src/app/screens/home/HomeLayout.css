@@ -1,15 +1,21 @@
 /*
- * Phone: the map holds the top ~42% and stays put; the list sheet scrolls beneath it.
+ * Phone: the map starts at ~42% and the sheet handle (or the corner button) resizes it.
  * Desktop: map is the left half, the list (or an open event) scrolls on the right.
  */
 
 .home {
   --home-sheet-overlap: 24px;
+  --home-sheet-peek: calc(var(--cf-tap-target) + 8px + env(safe-area-inset-bottom, 0px));
   position: relative;
   display: grid;
-  grid-template-rows: var(--cf-map-height-mobile) minmax(0, 1fr);
+  grid-template-rows: var(--home-map-height, var(--cf-map-height-mobile)) minmax(0, 1fr);
   height: 100dvh;
   overflow: hidden;
+  transition: grid-template-rows var(--cf-duration-base) var(--cf-ease-out);
+}
+
+.home.is-resizing {
+  transition: none;
 }
 
 .home__map {
@@ -51,7 +57,7 @@
   flex-direction: column;
   gap: var(--cf-space-4);
   margin-top: calc(var(--home-sheet-overlap) * -1);
-  padding: var(--cf-space-2) var(--cf-space-3) calc(var(--cf-space-10) + env(safe-area-inset-bottom));
+  padding: 0 var(--cf-space-3) calc(var(--cf-space-10) + env(safe-area-inset-bottom));
   overflow-y: auto;
   overscroll-behavior: contain;
   border-radius: var(--cf-radius-xl) var(--cf-radius-xl) 0 0;
@@ -62,13 +68,44 @@
   scrollbar-color: var(--cf-ink-5) transparent;
 }
 
-.home__grabber {
+.home__resize {
+  position: relative;
   flex: none;
-  align-self: center;
-  width: 36px;
-  height: 4px;
-  border-radius: 2px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: calc(100% + 2 * var(--cf-space-3));
+  height: var(--cf-tap-target);
+  margin-inline: calc(var(--cf-space-3) * -1);
+  margin-bottom: -8px;
+  padding-top: 8px;
+  touch-action: none;
+  cursor: ns-resize;
+  user-select: none;
+}
+
+.home__resize:focus-visible {
+  box-shadow: none;
+}
+
+.home__resize:focus-visible .home__grabber {
+  box-shadow: var(--cf-focus-ring);
+}
+
+.home__grabber {
+  width: 48px;
+  height: 5px;
+  border-radius: 3px;
   background: var(--cf-border-strong);
+  transition:
+    width var(--cf-duration-fast) var(--cf-ease-out),
+    background-color var(--cf-duration-fast) var(--cf-ease-out);
+}
+
+.home__resize:active .home__grabber,
+.home.is-resizing .home__grabber {
+  width: 72px;
+  background: var(--cf-text-secondary);
 }
 
 .home__head {
@@ -236,7 +273,8 @@
     box-shadow: none;
   }
 
-  .home__grabber {
+  .home__resize,
+  .home .app-map__bottom {
     display: none;
   }
 }

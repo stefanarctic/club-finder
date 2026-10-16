@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { MapPin } from 'lucide-react'
 import { Banner, Button, EmptyState, EventCard, SectionHeader } from '../../../design-system'
@@ -23,6 +23,52 @@ import { VenueStack } from './VenueStack'
 import './HomeLayout.css'
 
 const today = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+
+type SplitMetrics = {
+  min: number
+  max: number
+  compact: number
+  mid: number
+  large: number
+  expanded: number
+}
+
+/** Pixel stops for the phone map/list split. Desktop ignores these. */
+function splitMetrics(total: number, peek = 48): SplitMetrics {
+  const overlap = 24
+  const min = 240
+  // Tallest map still leaves the resize bar on screen.
+  const max = Math.max(min, Math.round(total - peek + overlap))
+  const clamp = (n: number) => Math.round(Math.min(max, Math.max(min, n)))
+  return {
+    min,
+    max,
+    compact: clamp(total * 0.3),
+    mid: clamp(total * 0.42),
+    large: clamp(total * 0.72),
+    expanded: max,
+  }
+}
+
+let peekCache = { width: -1, height: -1, peek: 48 }
+
+function readPeek(home: HTMLElement | null) {
+  if (!home) return 48
+  if (home.clientWidth === peekCache.width && home.clientHeight === peekCache.height) return peekCache.peek
+  const probe = document.createElement('div')
+  probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;height:var(--home-sheet-peek)'
+  home.appendChild(probe)
+  const peek = probe.getBoundingClientRect().height || 48
+  probe.remove()
+  peekCache = { width: home.clientWidth, height: home.clientHeight, peek }
+  return peek
+}
+
+function nearestSplit(height: number, metrics: SplitMetrics) {
+  return [metrics.compact, metrics.mid, metrics.large, metrics.expanded].reduce((best, stop) =>
+    Math.abs(stop - height) < Math.abs(best - height) ? stop : best,
+  )
+}
 
 const fallbackCopy: Record<FallbackReason, { tone: 'info' | 'warning'; title: string; body: string }> = {
   skipped: {
@@ -52,6 +98,85 @@ export function HomeLayout() {
   const navigate = useNavigate()
   const now = useNow()
   const activeEventId = useParams().id ?? null
+  const homeRef = useRef<HTMLDivElement>(null)
+  const [mapHeight, setMapHeight] = useState<number | null>(null)
+  const [resizing, setResizing] = useState(false)
+  const dragRef = useRef<{ pointerId: number; startY: number; startHeight: number; moved: boolean } | null>(null)
+  const suppressClick = useRef(false)
+
+  const metrics = () => {
+    const home = homeRef.current
+    const total = home?.clientHeight ?? window.innerHeight
+    return splitMetrics(total, readPeek(home))
+  }
+  const readMapHeight = () => homeRef.current?.querySelector<HTMLElement>('.home__map')?.clientHeight ?? metrics().mid
+  const mapExpanded = mapHeight != null && mapHeight >= metrics().max - 24
+
+  const toggleMapSize = () => {
+    const box = metrics()
+    const nowHeight = readMapHeight()
+    const next = Math.abs(nowHeight - box.expanded) < 36 ? box.mid : box.expanded
+    if (mapHeight == null) {
+      setResizing(true)
+      setMapHeight(nowHeight)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setResizing(false)
+          setMapHeight(next)
+        })
+      })
+      return
+    }
+    setMapHeight(next)
+  }
+
+  const onResizePointerDown = (event: PointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0) return
+    dragRef.current = { pointerId: event.pointerId, startY: event.clientY, startHeight: readMapHeight(), moved: false }
+    setResizing(true)
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId)
+    } catch {
+      // Capture needs an active pointer. The move listeners still track this gesture.
+    }
+  }
+
+  const onResizePointerMove = (event: PointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current
+    if (!drag || event.pointerId !== drag.pointerId) return
+    const delta = event.clientY - drag.startY
+    if (Math.abs(delta) > 6) drag.moved = true
+    const box = metrics()
+    setMapHeight(Math.min(box.max, Math.max(box.min, drag.startHeight + delta)))
+  }
+
+  const onResizePointerUp = (event: PointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current
+    if (!drag || event.pointerId !== drag.pointerId) return
+    dragRef.current = null
+    setResizing(false)
+    if (!drag.moved) return
+    suppressClick.current = true
+    const box = metrics()
+    const next = nearestSplit(drag.startHeight + (event.clientY - drag.startY), box)
+    setMapHeight(Math.min(box.max, Math.max(box.min, next)))
+  }
+
+  const onResizeClick = () => {
+    if (suppressClick.current) {
+      suppressClick.current = false
+      return
+    }
+    toggleMapSize()
+  }
+
+  const onResizeKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
+    event.preventDefault()
+    const box = metrics()
+    const delta = event.key === 'ArrowDown' ? 56 : -56
+    setMapHeight(Math.min(box.max, Math.max(box.min, readMapHeight() + delta)))
+  }
 
   const [timeRange, setTimeRange] = useState<TimeRange>('all')
   const [sort, setSort] = useState<SortKey>('forYou')
@@ -148,7 +273,11 @@ export function HomeLayout() {
   }
 
   return (
-    <div className="home">
+    <div
+      ref={homeRef}
+      className={resizing ? 'home is-resizing' : 'home'}
+      style={mapHeight != null ? ({ '--home-map-height': `${mapHeight}px` } as CSSProperties) : undefined}
+    >
       <EventMap
         className="home__map"
         city={catalog.city}
@@ -165,6 +294,8 @@ export function HomeLayout() {
         focusVenueId={focusVenueId}
         onPinClick={handlePinClick}
         onBackgroundClick={clearSelection}
+        mapExpanded={mapExpanded}
+        onToggleMapSize={toggleMapSize}
         topBar={
           <span className="home__city">
             <MapPin aria-hidden /> {catalog.city.name}
@@ -173,7 +304,19 @@ export function HomeLayout() {
       />
 
       <section className="home__sheet" aria-label="Events" inert={activeEventId ? true : undefined}>
-        <span className="home__grabber" aria-hidden />
+        <button
+          type="button"
+          className="home__resize"
+          aria-label="Resize map"
+          onPointerDown={onResizePointerDown}
+          onPointerMove={onResizePointerMove}
+          onPointerUp={onResizePointerUp}
+          onPointerCancel={onResizePointerUp}
+          onClick={onResizeClick}
+          onKeyDown={onResizeKeyDown}
+        >
+          <span className="home__grabber" />
+        </button>
 
         <header className="home__head">
           <p className="cf-label">

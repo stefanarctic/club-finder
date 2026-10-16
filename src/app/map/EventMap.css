@@ -53,7 +53,8 @@
 
 .app-map__bottom {
   right: var(--cf-space-3);
-  bottom: var(--app-map-bottom-inset, var(--cf-space-4));
+  /* Sit fully above the attribution strip, which shares --app-map-bottom-inset. */
+  bottom: calc(var(--app-map-bottom-inset, var(--cf-space-4)) + 40px);
 }
 
 /* ── Attribution, restyled for the night palette ─────────────────────────── */

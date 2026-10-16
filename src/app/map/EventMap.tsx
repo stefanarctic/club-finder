@@ -9,7 +9,7 @@ import {
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
-import { Navigation } from 'lucide-react'
+import { Maximize2, Minimize2, Navigation } from 'lucide-react'
 import { ClusterPin, IconButton, UserDot, VenuePin, cx } from '../../design-system'
 import type { VenuePinData } from '../../data/discovery'
 import type { City, LatLng } from '../../data/types'
@@ -52,6 +52,9 @@ type EventMapProps = {
   onBackgroundClick: () => void
   /** Floating controls over the top of the map. */
   topBar?: ReactNode
+  /** Phone split: the corner control grows or shrinks the map. Hidden on desktop. */
+  mapExpanded?: boolean
+  onToggleMapSize?: () => void
   className?: string
 }
 
@@ -97,6 +100,8 @@ export function EventMap({
   onPinClick,
   onBackgroundClick,
   topBar,
+  mapExpanded = false,
+  onToggleMapSize,
   className,
 }: EventMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -320,12 +325,25 @@ export function EventMap({
         </HtmlMarker>
       )}
 
-      {topBar && <div className="app-map__top">{topBar}</div>}
-      <div className="app-map__bottom">
+      <div className="app-map__top">
+        {topBar}
         <IconButton label={userPosition ? 'Recenter on me' : `Recenter on ${city.defaultCenterName}`} variant="glass" onClick={recenter}>
           <Navigation />
         </IconButton>
       </div>
+      {onToggleMapSize && (
+        <div className="app-map__bottom">
+          <IconButton
+            className="app-map__resize"
+            label={mapExpanded ? 'Shrink map' : 'Expand map'}
+            aria-expanded={mapExpanded}
+            variant="glass"
+            onClick={onToggleMapSize}
+          >
+            {mapExpanded ? <Minimize2 /> : <Maximize2 />}
+          </IconButton>
+        </div>
+      )}
     </div>
   )
 }

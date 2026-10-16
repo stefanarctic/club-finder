@@ -40,7 +40,7 @@ These choices keep the demo small and give “best fit” a concrete answer befo
 - **One pin per venue, aimed at that venue’s next event.** If the venue has another event coming up, tapping the pin opens a short stack. Clustering runs on this one-pin-per-venue set. The pin is highlighted when any still-upcoming event at that venue starts today.
 - **Seed dates are offsets from today.** Tonight, tomorrow, and this weekend are computed when the app loads. Fixed calendar dates would make the same-day outline go stale. The seed also uses a weekday offset (coming Saturday/Sunday) so “this weekend” stays on the weekend, and a minutes-from-load offset so “on now” and “starts soon” stay visible whatever the clock says.
 - **Two prices, labeled apart.** The event has an average ticket or door price in EUR. The venue has a separate price level for a night out, in the 1–4 style used on maps. The card never presents one number as the other.
-- **The demo has no backend.** Venues and events ship as a typed module. Covers are generated UV posters labelled “placeholder”, not real photos, so the installed app can still draw the list offline.
+- **The demo has no backend.** Venues and events ship as a typed module. Each event has a cover and each venue has two photos, local JPEGs in `public/photos`, so the installed app can still draw the list offline. They are invented night photographs, not pictures of real clubs.
 - **English interface, EUR prices.** Bucharest is the only city. Romanian copy can replace the strings later without changing the model.
 - **The same React app is the thing that gets wrapped later.** The native port should use Capacitor once the guest flow is stable, unless a store release needs a fully native map. Admin and ticketing are separate surfaces, not extra tabs in this demo.
 
@@ -182,7 +182,7 @@ Empty list: a short line that nothing matches, plus a way to clear the time rang
 
 ## Demo data
 
-About 12 to 16 venues, using real Bucharest coordinates so clustering and distance read correctly. Names, descriptions, ratings, prices, and photos are invented placeholders and should look like placeholders.
+About 12 to 16 venues, using real Bucharest coordinates so clustering and distance read correctly. Names, descriptions, ratings, prices, and photos are invented. The photos are night photographs made for this demo, not pictures of real venues.
 
 Spread them across:
 
@@ -224,7 +224,7 @@ Only Bucharest exists in the demo.
 - `neighbourhood`: used only to spread the seed (Centrul Vechi, Universitate, Cotroceni, Herăstrău, Floreasca)
 - `address`
 - `latitude`, `longitude`
-- `images`: local paths (empty in this demo; the UI draws labelled placeholders)
+- `images`: local paths under `public/photos`
 - `rating`: number from 0 to 5, placeholder
 - `priceLevel`: 1, 2, 3, or 4
 - `hours`: a short display string
@@ -241,7 +241,7 @@ Only Bucharest exists in the demo.
   - `{ weekday: 'saturday' | 'sunday', hour, minute }` — the coming Saturday or Sunday
   - `{ minutesFromLoad }` — offset from load time, so “on now” / “starts soon” do not depend on the clock
 - `durationHours`
-- `image`: local path (optional; omitted in this demo)
+- `image`: local path under `public/photos`
 - `averagePrice`: number, EUR
 - `currency`: `EUR`
 - `genres`

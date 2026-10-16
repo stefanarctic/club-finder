@@ -25,7 +25,7 @@ export type Venue = {
   address: string
   latitude: number
   longitude: number
-  /** Local paths. Empty in the demo seed: the UI draws labelled placeholder posters instead. */
+  /** Local paths, served from `public/photos`. */
   images: string[]
   /** Placeholder, 0–5. */
   rating: number
@@ -54,8 +54,8 @@ export type ClubEvent = {
   name: string
   start: EventStart
   durationHours: number
-  /** Local path. Empty in the demo seed: the UI draws a placeholder poster. */
-  image?: string
+  /** Local path, served from `public/photos`. */
+  image: string
   /** Average ticket or door price. */
   averagePrice: number
   currency: 'EUR'

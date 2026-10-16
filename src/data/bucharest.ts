@@ -2,7 +2,7 @@ import type { City, ClubEvent, Venue } from './types'
 
 /*
  * Placeholder seed. Coordinates are real Bucharest neighbourhoods so clustering and distance read
- * correctly; every name, number, address number, rating, price and description is invented.
+ * correctly; every name, number, address, rating, price, description and photo is invented.
  */
 
 export const bucharest: City = {
@@ -23,7 +23,7 @@ export const venues: Venue[] = [
     address: 'Str. Lipscani 00, Centrul Vechi',
     latitude: 44.43165,
     longitude: 26.10035,
-    images: [],
+    images: ['/photos/v-subsol-1.jpg', '/photos/v-subsol-2.jpg'],
     rating: 4.4,
     priceLevel: 3,
     hours: 'Thu–Sat 23:00–07:00',
@@ -39,7 +39,7 @@ export const venues: Venue[] = [
     address: 'Str. Gabroveni 00, Centrul Vechi',
     latitude: 44.4302,
     longitude: 26.1027,
-    images: [],
+    images: ['/photos/v-atelier-1.jpg', '/photos/v-atelier-2.jpg'],
     rating: 4.1,
     priceLevel: 2,
     hours: 'Wed–Sun 21:00–05:00',
@@ -55,7 +55,7 @@ export const venues: Venue[] = [
     address: 'Str. Șelari 00, Centrul Vechi',
     latitude: 44.43255,
     longitude: 26.09905,
-    images: [],
+    images: ['/photos/v-sample-room-1.jpg', '/photos/v-sample-room-2.jpg'],
     rating: 3.8,
     priceLevel: 2,
     hours: 'Fri–Sat 22:00–05:00',
@@ -70,7 +70,7 @@ export const venues: Venue[] = [
     address: 'Str. Franceză 00, Centrul Vechi',
     latitude: 44.4295,
     longitude: 26.1045,
-    images: [],
+    images: ['/photos/v-curtea-1.jpg', '/photos/v-curtea-2.jpg'],
     rating: 4.0,
     priceLevel: 1,
     hours: 'Daily 18:00–03:00',
@@ -87,7 +87,7 @@ export const venues: Venue[] = [
     address: 'Bd. Regina Elisabeta 00, Universitate',
     latitude: 44.4362,
     longitude: 26.1012,
-    images: [],
+    images: ['/photos/v-halo-1.jpg', '/photos/v-halo-2.jpg'],
     rating: 4.6,
     priceLevel: 3,
     hours: 'Thu–Sun 22:00–08:00',
@@ -103,7 +103,7 @@ export const venues: Venue[] = [
     address: 'Str. Academiei 00, Universitate',
     latitude: 44.4378,
     longitude: 26.105,
-    images: [],
+    images: ['/photos/v-bunker-1.jpg', '/photos/v-bunker-2.jpg'],
     rating: 3.9,
     priceLevel: 2,
     hours: 'Wed–Sat 22:00–05:00',
@@ -118,7 +118,7 @@ export const venues: Venue[] = [
     address: 'Str. Edgar Quinet 00, Universitate',
     latitude: 44.4345,
     longitude: 26.0985,
-    images: [],
+    images: ['/photos/v-velvet-1.jpg', '/photos/v-velvet-2.jpg'],
     rating: 4.5,
     priceLevel: 2,
     hours: 'Thu–Sun 22:00–06:00',
@@ -135,7 +135,7 @@ export const venues: Venue[] = [
     address: 'Bd. Geniului 00, Cotroceni',
     latitude: 44.4352,
     longitude: 26.0745,
-    images: [],
+    images: ['/photos/v-printworks-1.jpg', '/photos/v-printworks-2.jpg'],
     rating: 4.7,
     priceLevel: 3,
     hours: 'Fri–Sat 23:00–09:00',
@@ -151,7 +151,7 @@ export const venues: Venue[] = [
     address: 'Str. Dr. Lister 00, Cotroceni',
     latitude: 44.4305,
     longitude: 26.068,
-    images: [],
+    images: ['/photos/v-casa-1.jpg', '/photos/v-casa-2.jpg'],
     rating: 4.2,
     priceLevel: 2,
     hours: 'Thu–Sat 21:00–04:00',
@@ -168,7 +168,7 @@ export const venues: Venue[] = [
     address: 'Aleea Parcului 00, Herăstrău',
     latitude: 44.4712,
     longitude: 26.084,
-    images: [],
+    images: ['/photos/v-pier-1.jpg', '/photos/v-pier-2.jpg'],
     rating: 4.3,
     priceLevel: 4,
     hours: 'Fri–Sat 22:00–05:00',
@@ -183,7 +183,7 @@ export const venues: Venue[] = [
     address: 'Șos. Kiseleff 00, Herăstrău',
     latitude: 44.4675,
     longitude: 26.079,
-    images: [],
+    images: ['/photos/v-lumen-1.jpg', '/photos/v-lumen-2.jpg'],
     rating: 4.4,
     priceLevel: 4,
     hours: 'Sat–Sun 19:00–07:00',
@@ -198,7 +198,7 @@ export const venues: Venue[] = [
     address: 'Bd. Aviatorilor 00, Herăstrău',
     latitude: 44.474,
     longitude: 26.0905,
-    images: [],
+    images: ['/photos/v-noir-1.jpg', '/photos/v-noir-2.jpg'],
     rating: 3.7,
     priceLevel: 4,
     hours: 'Fri–Sat 23:00–05:00',
@@ -215,7 +215,7 @@ export const venues: Venue[] = [
     address: 'Calea Floreasca 00, Floreasca',
     latitude: 44.4635,
     longitude: 26.1015,
-    images: [],
+    images: ['/photos/v-floreasca-lounge-1.jpg', '/photos/v-floreasca-lounge-2.jpg'],
     rating: 4.0,
     priceLevel: 2,
     hours: 'Tue–Sun 20:00–02:00',
@@ -230,7 +230,7 @@ export const venues: Venue[] = [
     address: 'Str. Barbu Văcărescu 00, Floreasca',
     latitude: 44.46,
     longitude: 26.106,
-    images: [],
+    images: ['/photos/v-studio-1.jpg', '/photos/v-studio-2.jpg'],
     rating: 4.5,
     priceLevel: 3,
     hours: 'Thu–Sat 23:00–07:00',
@@ -245,7 +245,7 @@ export const venues: Venue[] = [
     address: 'Str. Dinu Lipatti 00, Floreasca',
     latitude: 44.4578,
     longitude: 26.097,
-    images: [],
+    images: ['/photos/v-garage-1.jpg', '/photos/v-garage-2.jpg'],
     rating: 3.9,
     priceLevel: 1,
     hours: 'Wed–Sat 20:00–02:00',
@@ -258,6 +258,7 @@ export const events: ClubEvent[] = [
   // ── Tonight ──────────────────────────────────────────────────────────────
   {
     id: 'e-curtea-open-stage',
+    image: '/photos/e-curtea-open-stage.jpg',
     venueId: 'v-curtea',
     name: 'Open Stage Jam',
     start: { minutesFromLoad: -90 },
@@ -269,6 +270,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-halo-warm-up',
+    image: '/photos/e-halo-warm-up.jpg',
     venueId: 'v-halo',
     name: 'Early Doors: Warm-up',
     start: { minutesFromLoad: 75 },
@@ -280,6 +282,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-sample-room-classics',
+    image: '/photos/e-sample-room-classics.jpg',
     venueId: 'v-sample-room',
     name: 'Charts & Classics',
     start: { daysFromToday: 0, hour: 22, minute: 0 },
@@ -291,6 +294,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-atelier-velours',
+    image: '/photos/e-atelier-velours.jpg',
     venueId: 'v-atelier',
     name: 'Velours',
     start: { daysFromToday: 0, hour: 22, minute: 30 },
@@ -302,6 +306,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-subsol-basement',
+    image: '/photos/e-subsol-basement.jpg',
     venueId: 'v-subsol',
     name: 'Basement Frequencies',
     start: { daysFromToday: 0, hour: 23, minute: 0 },
@@ -314,6 +319,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-printworks-industrial',
+    image: '/photos/e-printworks-industrial.jpg',
     venueId: 'v-printworks',
     name: 'Industrial Hours',
     start: { daysFromToday: 0, hour: 23, minute: 45 },
@@ -327,6 +333,7 @@ export const events: ClubEvent[] = [
   // ── Tomorrow ─────────────────────────────────────────────────────────────
   {
     id: 'e-floreasca-salsa',
+    image: '/photos/e-floreasca-salsa.jpg',
     venueId: 'v-floreasca-lounge',
     name: 'Salsa & Bachata Social',
     start: { daysFromToday: 1, hour: 21, minute: 0 },
@@ -338,6 +345,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-casa-noche',
+    image: '/photos/e-casa-noche.jpg',
     venueId: 'v-casa',
     name: 'Noche Caliente',
     start: { daysFromToday: 1, hour: 22, minute: 0 },
@@ -349,6 +357,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-bunker-cypher',
+    image: '/photos/e-bunker-cypher.jpg',
     venueId: 'v-bunker',
     name: 'Cypher Vol. 12',
     start: { daysFromToday: 1, hour: 23, minute: 0 },
@@ -360,6 +369,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-velvet-glitter',
+    image: '/photos/e-velvet-glitter.jpg',
     venueId: 'v-velvet',
     name: 'Glitter Shift',
     start: { daysFromToday: 1, hour: 23, minute: 30 },
@@ -371,6 +381,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-studio-hard-groove',
+    image: '/photos/e-studio-hard-groove.jpg',
     venueId: 'v-studio',
     name: 'Studio Sessions: Hard Groove',
     start: { daysFromToday: 2, hour: 23, minute: 0 },
@@ -382,6 +393,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-halo-nights',
+    image: '/photos/e-halo-nights.jpg',
     venueId: 'v-halo',
     name: 'Halo Nights 04',
     start: { daysFromToday: 3, hour: 23, minute: 0 },
@@ -395,6 +407,7 @@ export const events: ClubEvent[] = [
   // ── This weekend ─────────────────────────────────────────────────────────
   {
     id: 'e-pier-lakeside',
+    image: '/photos/e-pier-lakeside.jpg',
     venueId: 'v-pier',
     name: 'Lakeside Saturday',
     start: { weekday: 'saturday', hour: 22, minute: 0 },
@@ -406,6 +419,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-noir-black-tie',
+    image: '/photos/e-noir-black-tie.jpg',
     venueId: 'v-noir',
     name: 'Noir: Black Tie Hip-Hop',
     start: { weekday: 'saturday', hour: 23, minute: 0 },
@@ -417,6 +431,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-subsol-long-room',
+    image: '/photos/e-subsol-long-room.jpg',
     venueId: 'v-subsol',
     name: 'Long Room: Saturday Sessions',
     start: { weekday: 'saturday', hour: 23, minute: 30 },
@@ -428,6 +443,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-velvet-tea-dance',
+    image: '/photos/e-velvet-tea-dance.jpg',
     venueId: 'v-velvet',
     name: 'Sunday Tea Dance',
     start: { weekday: 'sunday', hour: 18, minute: 0 },
@@ -439,6 +455,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-lumen-sunrise',
+    image: '/photos/e-lumen-sunrise.jpg',
     venueId: 'v-lumen',
     name: 'Sunset to Sunrise',
     start: { weekday: 'sunday', hour: 19, minute: 0 },
@@ -452,6 +469,7 @@ export const events: ClubEvent[] = [
   // ── Further out ──────────────────────────────────────────────────────────
   {
     id: 'e-garage-live',
+    image: '/photos/e-garage-live.jpg',
     venueId: 'v-garage',
     name: 'Garage Live Vol. 3',
     start: { daysFromToday: 9, hour: 21, minute: 0 },
@@ -463,6 +481,7 @@ export const events: ClubEvent[] = [
   },
   {
     id: 'e-printworks-live',
+    image: '/photos/e-printworks-live.jpg',
     venueId: 'v-printworks',
     name: 'Printworks Live: Placeholder Band',
     start: { daysFromToday: 12, hour: 20, minute: 0 },

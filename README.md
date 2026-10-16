@@ -40,7 +40,7 @@ Phone: map holds the top of the viewport, list scrolls under it. Desktop: map on
 
 ## Data
 
-There is no backend. Venues and events are a typed module in `src/data/bucharest.ts`. Starts are offsets from load time (today / coming Saturday / minutes from now), so “tonight” does not go stale. Covers are generated placeholders, labelled as such.
+There is no backend. Venues and events are a typed module in `src/data/bucharest.ts`. Starts are offsets from load time (today / coming Saturday / minutes from now), so “tonight” does not go stale. Covers and venue photos are local JPEGs in `public/photos`.
 
 “For you” is the weighted sum in PRODUCT.md. The list and the map share `src/data/discovery.ts` for upcoming, same-day, and score.
 

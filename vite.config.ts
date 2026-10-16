@@ -28,7 +28,7 @@ export default defineConfig({
       },
       workbox: {
         // App shell, seed data, the map worker (.mjs) and the Latin font subsets (latin-ext carries ș and ț).
-        globPatterns: ['**/*.{js,mjs,css,html,svg,png,ico,webmanifest}', '**/*-latin-*.woff2'],
+        globPatterns: ['**/*.{js,mjs,css,html,svg,png,jpg,ico,webmanifest}', '**/*-latin-*.woff2'],
         navigateFallback: '/index.html',
         runtimeCaching: [
           {

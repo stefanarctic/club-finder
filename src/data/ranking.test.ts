@@ -18,6 +18,7 @@ function eventAt(startsAt: Date, overrides: Partial<ClubEvent> = {}): ScheduledE
     currency: 'EUR',
     genres: ['techno', 'house'],
     description: '',
+    image: '/photos/test.jpg',
     ...overrides,
     startsAt,
     endsAt: new Date(startsAt.getTime() + 6 * HOUR),

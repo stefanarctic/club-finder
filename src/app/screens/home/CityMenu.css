@@ -15,8 +15,29 @@
   border-color: var(--cf-border-accent);
 }
 
+.home__city-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .home__city-pin {
   color: var(--cf-uv-300);
+}
+
+.home__city .home__city-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  color: var(--cf-text-accent);
+}
+
+.home__city-filters::before {
+  content: "";
+  width: 1px;
+  height: 12px;
+  background: var(--cf-border-strong);
 }
 
 .home__city-chevron {

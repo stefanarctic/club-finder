@@ -35,7 +35,9 @@
   font-weight: 700;
   font-size: var(--cf-text-md);
   white-space: nowrap;
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: calc(100% - var(--cf-tap-target) - var(--cf-space-2));
 }
 
 .home__city svg {

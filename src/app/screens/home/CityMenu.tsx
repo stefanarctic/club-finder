@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronDown, MapPin, X } from 'lucide-react'
+import { ChevronDown, MapPin, SlidersHorizontal, X } from 'lucide-react'
 import { IconButton } from '../../../design-system'
 import type { SortKey } from '../../../data/discovery'
 import type { TimeRange } from '../../../data/schedule'
@@ -138,10 +138,14 @@ export function CityMenu({
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={menuId}
+        aria-label={tuneCount > 0 ? `${cityName}, filters, ${tuneCount} active` : `${cityName}, filters`}
         onClick={() => (open ? closeMenu(false) : setOpen(true))}
       >
         <MapPin className="home__city-pin" aria-hidden />
-        <span>{cityName}</span>
+        <span className="home__city-name">{cityName}</span>
+        <span className="home__city-filters">
+          <SlidersHorizontal aria-hidden />
+        </span>
         {tuneCount > 0 && <span className="home__city-badge cf-mono">{tuneCount}</span>}
         <ChevronDown className="home__city-chevron" aria-hidden />
       </button>

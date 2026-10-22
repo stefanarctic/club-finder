@@ -1,0 +1,40 @@
+.loc-prompt {
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--cf-z-toast) + 10);
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  padding: max(10vh, calc(env(safe-area-inset-top) + var(--cf-space-8))) var(--cf-space-4) var(--cf-space-4);
+  background: rgb(5 4 7 / 0.62);
+}
+
+.loc-prompt__dialog {
+  width: min(100%, 400px);
+  display: grid;
+  gap: var(--cf-space-4);
+  padding: var(--cf-space-6);
+  border-radius: var(--cf-radius-xl);
+  background: var(--cf-bg-raised);
+  border: 1px solid var(--cf-border-default);
+  box-shadow: var(--cf-elevation-3);
+  animation: cf-rise var(--cf-duration-slow) var(--cf-ease-out);
+}
+
+.loc-prompt__eyebrow {
+  color: var(--cf-text-accent);
+}
+
+.loc-prompt__title {
+  font-size: var(--cf-text-3xl);
+}
+
+.loc-prompt__body {
+  color: var(--cf-text-secondary);
+}
+
+.loc-prompt__actions {
+  display: grid;
+  gap: var(--cf-space-2);
+  margin-top: var(--cf-space-2);
+}

@@ -40,12 +40,14 @@
   font-stretch: 85%;
   font-weight: 700;
   font-size: var(--cf-text-md);
+  white-space: nowrap;
+  flex: none;
 }
 
 .home__city svg {
   width: 16px;
   height: 16px;
-  color: var(--cf-uv-300);
+  flex: none;
 }
 
 .home__sheet {
@@ -106,24 +108,6 @@
 .home.is-resizing .home__grabber {
   width: 72px;
   background: var(--cf-text-secondary);
-}
-
-.home__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--cf-space-1) var(--cf-space-3);
-  padding-inline: var(--cf-space-1);
-}
-
-.home__summary {
-  font-size: var(--cf-text-xs);
-  color: var(--cf-text-tertiary);
-}
-
-.home__summary .cf-mono {
-  color: var(--cf-text-secondary);
 }
 
 .home__footer {

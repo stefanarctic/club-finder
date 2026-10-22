@@ -4,8 +4,8 @@ import { isInsideCity } from '../data/geo'
 import { BUDGETS, GENRES, type Budget, type Genre, type LatLng } from '../data/types'
 
 /*
- * Lives for the browser session (sessionStorage): a refresh in the same tab returns to the
- * landing page, a new session asks for location again.
+ * Lives for the browser session (sessionStorage): a refresh in the same tab keeps the
+ * choice and opens the map, a new session asks for location again from the map.
  */
 
 export type FallbackReason = 'skipped' | 'outside' | 'denied' | 'unavailable'

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { MapPin } from 'lucide-react'
 import { Banner, Button, EmptyState, EventCard, SectionHeader } from '../../../design-system'
 import { catalog } from '../../../data/catalog'
 import {
@@ -18,7 +17,8 @@ import { EventMap } from '../../map/EventMap'
 import { useSession, type FallbackReason } from '../../session'
 import { useNow } from '../../useNow'
 import { EventPanel } from '../event/EventPanel'
-import { ListControls } from './ListControls'
+import { CityMenu } from './CityMenu'
+import { LocationPrompt } from './LocationPrompt'
 import { VenueStack } from './VenueStack'
 import './HomeLayout.css'
 
@@ -181,7 +181,6 @@ export function HomeLayout() {
   const [timeRange, setTimeRange] = useState<TimeRange>('all')
   const [sort, setSort] = useState<SortKey>('forYou')
   const [filterMapToo, setFilterMapToo] = useState(false)
-  const [filtersOpen, setFiltersOpen] = useState(false)
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null)
   const [stackVenueId, setStackVenueId] = useState<string | null>(null)
   const [scrollTarget, setScrollTarget] = useState<{ eventId: string } | null>(null)
@@ -296,14 +295,28 @@ export function HomeLayout() {
         onBackgroundClick={clearSelection}
         mapExpanded={mapExpanded}
         onToggleMapSize={toggleMapSize}
+        inert={!session.location}
         topBar={
-          <span className="home__city">
-            <MapPin aria-hidden /> {catalog.city.name}
-          </span>
+          <CityMenu
+            cityName={catalog.city.name}
+            dateLabel={today.format(now)}
+            eventCount={listings.length}
+            venueCount={pins.length}
+            timeRange={timeRange}
+            onTimeRangeChange={setTimeRange}
+            sort={sort}
+            onSortChange={setSort}
+            genres={genres}
+            onGenresChange={session.setGenres}
+            budget={budget}
+            onBudgetChange={session.setBudget}
+            filterMapToo={filterMapToo}
+            onFilterMapTooChange={setFilterMapToo}
+          />
         }
       />
 
-      <section className="home__sheet" aria-label="Events" inert={activeEventId ? true : undefined}>
+      <section className="home__sheet" aria-label="Events" inert={activeEventId || !session.location ? true : undefined}>
         <button
           type="button"
           className="home__resize"
@@ -318,36 +331,11 @@ export function HomeLayout() {
           <span className="home__grabber" />
         </button>
 
-        <header className="home__head">
-          <p className="cf-label">
-            {catalog.city.name} · {today.format(now)}
-          </p>
-          <p className="home__summary">
-            <span className="cf-mono">{listings.length}</span> upcoming at{' '}
-            <span className="cf-mono">{pins.length}</span> venues
-          </p>
-        </header>
-
         {fallback && !session.bannerDismissed && (
           <Banner tone={fallback.tone} title={fallback.title} onDismiss={session.dismissBanner}>
             {fallback.body}
           </Banner>
         )}
-
-        <ListControls
-          timeRange={timeRange}
-          onTimeRangeChange={setTimeRange}
-          sort={sort}
-          onSortChange={setSort}
-          genres={genres}
-          onGenresChange={session.setGenres}
-          budget={budget}
-          onBudgetChange={session.setBudget}
-          filterMapToo={filterMapToo}
-          onFilterMapTooChange={setFilterMapToo}
-          expanded={filtersOpen}
-          onExpandedChange={setFiltersOpen}
-        />
 
         {visible.length === 0 ? (
           <EmptyState
@@ -381,6 +369,8 @@ export function HomeLayout() {
           <p>Placeholder venues and events. Ticketing is coming later.</p>
         </footer>
       </section>
+
+      {!session.location && <LocationPrompt />}
 
       {activeEventId && (
         <EventPanel

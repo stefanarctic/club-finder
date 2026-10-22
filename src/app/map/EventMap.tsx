@@ -55,6 +55,8 @@ type EventMapProps = {
   /** Phone split: the corner control grows or shrinks the map. Hidden on desktop. */
   mapExpanded?: boolean
   onToggleMapSize?: () => void
+  /** Keeps the map out of focus while the location prompt is open. */
+  inert?: boolean
   className?: string
 }
 
@@ -102,6 +104,7 @@ export function EventMap({
   topBar,
   mapExpanded = false,
   onToggleMapSize,
+  inert = false,
   className,
 }: EventMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -112,6 +115,10 @@ export function EventMap({
   pinsRef.current = pins
   const onBackgroundClickRef = useRef(onBackgroundClick)
   onBackgroundClickRef.current = onBackgroundClick
+  const userPositionRef = useRef(userPosition)
+  userPositionRef.current = userPosition
+  // True when the map opened before a position existed, so a later grant should move the camera.
+  const flyToGrantedPosition = useRef(false)
 
   const pinsById = useMemo(() => new Map(pins.map((p) => [p.venue.id, p])), [pins])
 
@@ -119,6 +126,7 @@ export function EventMap({
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
+    flyToGrantedPosition.current = userPositionRef.current == null
     const { north, south, west, east } = city.boundingBox
     const pad = 0.08
     const instance = new MapLibreMap({
@@ -234,6 +242,17 @@ export function EventMap({
     }
   }, [map])
 
+  // A location accepted after the map opened moves the camera onto the guest.
+  useEffect(() => {
+    if (!map || !userPosition || !flyToGrantedPosition.current) return
+    flyToGrantedPosition.current = false
+    map.easeTo({
+      center: [userPosition.longitude, userPosition.latitude],
+      zoom: Math.max(map.getZoom(), 14),
+      duration: 800,
+    })
+  }, [map, userPosition])
+
   // Give an opening stack room above its pin.
   useEffect(() => {
     if (!map || !stackVenueId) return
@@ -267,7 +286,7 @@ export function EventMap({
   const stackPin = stackVenueId ? pinsById.get(stackVenueId) : undefined
 
   return (
-    <div className={cx('app-map', className)}>
+    <div className={cx('app-map', className)} inert={inert || undefined}>
       <div ref={containerRef} className="app-map__canvas" />
       <div className="app-map__vignette" aria-hidden />
 

@@ -9,7 +9,7 @@ import {
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
-import { Maximize2, Minimize2, Navigation } from 'lucide-react'
+import { Navigation } from 'lucide-react'
 import { ClusterPin, IconButton, UserDot, VenuePin, cx } from '../../design-system'
 import type { VenuePinData } from '../../data/discovery'
 import type { City, LatLng } from '../../data/types'
@@ -52,9 +52,6 @@ type EventMapProps = {
   onBackgroundClick: () => void
   /** Floating controls over the top of the map. */
   topBar?: ReactNode
-  /** Phone split: the corner control grows or shrinks the map. Hidden on desktop. */
-  mapExpanded?: boolean
-  onToggleMapSize?: () => void
   /** Keeps the map out of focus while the location prompt is open. */
   inert?: boolean
   className?: string
@@ -102,8 +99,6 @@ export function EventMap({
   onPinClick,
   onBackgroundClick,
   topBar,
-  mapExpanded = false,
-  onToggleMapSize,
   inert = false,
   className,
 }: EventMapProps) {
@@ -143,7 +138,7 @@ export function EventMap({
       dragRotate: false,
       pitchWithRotate: false,
       touchPitch: false,
-      attributionControl: { compact: true },
+      attributionControl: false,
     })
     // On a short phone map, fitting every pin around a fixed center can zoom out past the city.
     if (instance.getZoom() < MIN_OPENING_ZOOM) instance.setZoom(MIN_OPENING_ZOOM)
@@ -350,19 +345,6 @@ export function EventMap({
           <Navigation />
         </IconButton>
       </div>
-      {onToggleMapSize && (
-        <div className="app-map__bottom">
-          <IconButton
-            className="app-map__resize"
-            label={mapExpanded ? 'Shrink map' : 'Expand map'}
-            aria-expanded={mapExpanded}
-            variant="glass"
-            onClick={onToggleMapSize}
-          >
-            {mapExpanded ? <Minimize2 /> : <Maximize2 />}
-          </IconButton>
-        </div>
-      )}
     </div>
   )
 }

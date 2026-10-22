@@ -29,8 +29,7 @@
   z-index: 2;
 }
 
-.app-map__top,
-.app-map__bottom {
+.app-map__top {
   position: absolute;
   z-index: 5;
   display: flex;
@@ -38,8 +37,7 @@
   pointer-events: none;
 }
 
-.app-map__top > *,
-.app-map__bottom > * {
+.app-map__top > * {
   pointer-events: auto;
 }
 
@@ -51,45 +49,9 @@
   align-items: center;
 }
 
-.app-map__bottom {
-  right: var(--cf-space-3);
-  /* Sit fully above the attribution strip, which shares --app-map-bottom-inset. */
-  bottom: calc(var(--app-map-bottom-inset, var(--cf-space-4)) + 40px);
-}
-
-/* ── Attribution, restyled for the night palette ─────────────────────────── */
-
+/* The data-credit control sits in the rounded corner. Drop it under the event sheet. */
 .app-map .maplibregl-ctrl-bottom-left,
 .app-map .maplibregl-ctrl-bottom-right {
-  z-index: 4;
-}
-
-.app-map .maplibregl-ctrl-bottom-right {
-  right: auto;
-  left: 0;
-  bottom: var(--app-map-bottom-inset, 0);
-}
-
-.app-map .maplibregl-ctrl-attrib {
-  background: var(--cf-bg-glass);
-  color: var(--cf-text-tertiary);
-  font-family: var(--cf-font-body);
-  font-size: var(--cf-text-2xs);
-}
-
-.app-map .maplibregl-ctrl-attrib a {
-  color: var(--cf-text-secondary);
-}
-
-.app-map .maplibregl-ctrl-attrib.maplibregl-compact {
-  margin: 0 0 var(--cf-space-2) var(--cf-space-2);
-  border-radius: var(--cf-radius-pill);
-}
-
-.app-map .maplibregl-ctrl-attrib-button {
-  filter: invert(0.8);
-}
-
-.app-map .maplibregl-ctrl-attrib.maplibregl-compact-show {
-  border-radius: var(--cf-radius-sm);
+  bottom: -64px;
+  z-index: 1;
 }

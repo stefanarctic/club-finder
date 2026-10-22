@@ -155,7 +155,6 @@
   --cf-duration-pulse: 2400ms;
 
   /* ── Layout ─────────────────────────────────────────────────────────── */
-  --cf-map-height-mobile: 42vh;
   --cf-tap-target: 44px;
   --cf-z-map: 0;
   --cf-z-sticky: 10;

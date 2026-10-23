@@ -9,7 +9,7 @@
   position: relative;
   display: grid;
   grid-template-rows: calc(50% + var(--home-sheet-overlap)) minmax(0, 1fr);
-  height: 100dvh;
+  height: 100%;
   overflow: hidden;
 }
 

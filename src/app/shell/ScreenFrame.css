@@ -1,0 +1,24 @@
+.screen {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cf-ink-5) transparent;
+}
+
+.screen__column {
+  display: grid;
+  gap: var(--cf-space-5);
+  width: min(100%, 480px);
+  margin-inline: auto;
+  padding: calc(var(--cf-space-6) + env(safe-area-inset-top)) var(--cf-space-4) var(--cf-space-8);
+}
+
+.screen__title {
+  font-size: var(--cf-text-3xl);
+}
+
+.screen__note {
+  font-size: var(--cf-text-sm);
+  color: var(--cf-text-tertiary);
+}

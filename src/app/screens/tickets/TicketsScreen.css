@@ -1,0 +1,82 @@
+.tickets {
+  display: grid;
+  gap: var(--cf-space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.pass {
+  display: grid;
+  overflow: hidden;
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-bg-raised);
+  border: 1px solid var(--cf-border-default);
+  box-shadow: var(--cf-elevation-2);
+  animation: cf-rise var(--cf-duration-base) var(--cf-ease-out);
+}
+
+.pass__top {
+  display: flex;
+  gap: var(--cf-space-3);
+  padding: var(--cf-space-4);
+}
+
+.pass__cover {
+  width: 76px;
+  height: 76px;
+  flex: none;
+  border-radius: var(--cf-radius-sm);
+}
+
+.pass__facts {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pass__name {
+  font-size: var(--cf-text-lg);
+}
+
+.pass__venue,
+.pass__time {
+  font-size: var(--cf-text-sm);
+  color: var(--cf-text-secondary);
+}
+
+.pass__time {
+  color: var(--cf-text-accent);
+}
+
+.pass__stub {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-space-4);
+  padding: var(--cf-space-4);
+  border-top: 1px dashed var(--cf-border-strong);
+  background: var(--cf-bg-surface);
+}
+
+.pass__mark {
+  display: grid;
+  grid-template-columns: repeat(6, 7px);
+  gap: 3px;
+  flex: none;
+}
+
+.pass__mark span {
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--cf-ink-5);
+}
+
+.pass__mark span.is-on {
+  background: var(--cf-mist-100);
+}
+
+.pass__disclaimer {
+  font-size: var(--cf-text-xs);
+  color: var(--cf-text-tertiary);
+}

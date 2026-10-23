@@ -1,0 +1,58 @@
+.shell {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100dvh;
+  background: var(--cf-bg-app);
+}
+
+.shell__stage {
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+}
+
+.shell__stage > * {
+  position: absolute;
+  inset: 0;
+}
+
+/* The event page is fixed to the viewport, but it lives inside the stage's
+   stacking context. Lift the stage so that page covers the tab bar on a phone.
+   On desktop the panel stays in the list column, so the bar remains usable. */
+.shell__stage:has(.event-panel) {
+  z-index: 2;
+}
+
+.tab-bar {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--cf-border-default);
+  background: var(--cf-bg-app);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab-bar__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  padding-block: 8px;
+  color: var(--cf-text-tertiary);
+  font-size: var(--cf-text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.tab-bar__link svg {
+  width: 22px;
+  height: 22px;
+}
+
+.tab-bar__link.is-active {
+  color: var(--cf-text-accent);
+}

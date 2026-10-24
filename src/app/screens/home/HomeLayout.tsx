@@ -11,6 +11,7 @@ import {
   type Listing,
   type SortKey,
 } from '../../../data/discovery'
+import { boundsAroundPoints, cityContaining, isInsideCity, toLngLatBounds } from '../../../data/geo'
 import type { TimeRange } from '../../../data/schedule'
 import { startLabel } from '../../format'
 import { EventMap } from '../../map/EventMap'
@@ -24,26 +25,23 @@ import './HomeLayout.css'
 
 const today = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
 
+const fallbackPlace = catalog.defaultCity.defaultCenterName
+
 const fallbackCopy: Record<FallbackReason, { tone: 'info' | 'warning'; title: string; body: string }> = {
   skipped: {
     tone: 'info',
-    title: 'Showing Bucharest',
-    body: `This demo only maps Bucharest. Distances are measured from ${catalog.city.defaultCenterName}.`,
-  },
-  outside: {
-    tone: 'warning',
-    title: 'You’re outside Bucharest',
-    body: `This demo only maps Bucharest, so distances are measured from ${catalog.city.defaultCenterName}.`,
+    title: `Showing ${catalog.defaultCity.name}`,
+    body: `Distances are measured from ${fallbackPlace}. Pick a city in filters to move the map, or zoom out to see everywhere.`,
   },
   denied: {
     tone: 'warning',
     title: 'Location not shared',
-    body: `This demo only maps Bucharest. Distances are measured from ${catalog.city.defaultCenterName}.`,
+    body: `Distances are measured from ${fallbackPlace}. The map still covers everywhere.`,
   },
   unavailable: {
     tone: 'warning',
     title: 'Couldn’t find your location',
-    body: `This demo only maps Bucharest. Distances are measured from ${catalog.city.defaultCenterName}.`,
+    body: `Distances are measured from ${fallbackPlace}. The map still covers everywhere.`,
   },
 }
 
@@ -53,6 +51,8 @@ export function HomeLayout() {
   const now = useNow()
   const activeEventId = useParams().id ?? null
 
+  const [pickedCityId, setPickedCityId] = useState<string | null>(null)
+  const [cityFocus, setCityFocus] = useState(0)
   const [timeRange, setTimeRange] = useState<TimeRange>('all')
   const [sort, setSort] = useState<SortKey>('forYou')
   const [filterMapToo, setFilterMapToo] = useState(false)
@@ -62,8 +62,25 @@ export function HomeLayout() {
 
   const { origin, genres, budget } = session
 
+  const selectedCity = useMemo(() => {
+    const picked = catalog.cities.find((city) => city.id === pickedCityId)
+    return picked ?? cityContaining(origin, catalog.cities) ?? catalog.defaultCity
+  }, [pickedCityId, origin])
+
+  const chooseCity = (id: string) => {
+    setPickedCityId(id)
+    setCityFocus((n) => n + 1)
+  }
+
   const listings = useMemo(
-    () => buildListings({ ...catalog, origin, preferences: { genres, budget }, now }),
+    () =>
+      buildListings({
+        venues: catalog.venues,
+        events: catalog.events,
+        origin,
+        preferences: { genres, budget },
+        now,
+      }),
     [origin, genres, budget, now],
   )
 
@@ -74,6 +91,11 @@ export function HomeLayout() {
 
   const pins = useMemo(() => buildPins(listings, new Set(visible.map((l) => l.event.id))), [listings, visible])
   const mapPins = useMemo(() => (filterMapToo ? pins.filter((p) => p.matched) : pins), [pins, filterMapToo])
+  const cityBounds = useMemo(() => {
+    const points = pins.map((pin) => pin.venue).filter((venue) => isInsideCity(venue, selectedCity))
+    if (points.length === 0) return toLngLatBounds(selectedCity.boundingBox, 0.02)
+    return boundsAroundPoints(selectedCity.defaultCenter, points, 0.008)
+  }, [pins, selectedCity])
   const pinsByVenue = useMemo(() => new Map(pins.map((p) => [p.venue.id, p])), [pins])
 
   const groups = useMemo(() => groupListings(sortListings(visible, sort)), [visible, sort])
@@ -81,8 +103,8 @@ export function HomeLayout() {
   const activeListing = activeEventId ? listings.find((l) => l.event.id === activeEventId) : undefined
 
   useEffect(() => {
-    if (!activeEventId) document.title = 'Club Finder · Bucharest'
-  }, [activeEventId])
+    if (!activeEventId) document.title = `Club Finder · ${selectedCity.name}`
+  }, [activeEventId, selectedCity.name])
 
   useEffect(() => {
     if (!scrollTarget || activeEventId) return
@@ -150,10 +172,14 @@ export function HomeLayout() {
     <div className="home">
       <EventMap
         className="home__map"
-        city={catalog.city}
+        bounds={cityBounds}
+        boundsKey={`${selectedCity.id}:${cityFocus}`}
+        fitMinZoom={12}
+        placeName={selectedCity.defaultCenterName}
         pins={mapPins}
         origin={origin}
         userPosition={session.userPosition}
+        followUser={session.userPosition != null && isInsideCity(session.userPosition, selectedCity)}
         selectedVenueId={focusVenueId ?? selectedVenueId}
         stackVenueId={stackPin ? stackVenueId : null}
         stackContent={
@@ -167,7 +193,10 @@ export function HomeLayout() {
         inert={!session.location}
         topBar={
           <CityMenu
-            cityName={catalog.city.name}
+            cities={catalog.cities}
+            cityId={selectedCity.id}
+            onCityChange={chooseCity}
+            cityName={selectedCity.name}
             dateLabel={today.format(now)}
             eventCount={listings.length}
             venueCount={pins.length}

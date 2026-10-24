@@ -41,19 +41,19 @@ export function LocationPrompt() {
         aria-labelledby="loc-prompt-title"
         aria-describedby="loc-prompt-body"
       >
-        <p className="cf-label loc-prompt__eyebrow">{catalog.city.name} · tonight</p>
+        <p className="cf-label loc-prompt__eyebrow">{catalog.defaultCity.name} · tonight</p>
         <h2 id="loc-prompt-title" className="cf-display loc-prompt__title">
           Use your location?
         </h2>
         <p id="loc-prompt-body" className="loc-prompt__body">
-          Allow it and the map centers on you. Otherwise it stays on {catalog.city.name}.
+          Allow it and the map centers on you, wherever you are. Otherwise it opens on {catalog.defaultCity.name}.
         </p>
         <div className="loc-prompt__actions">
           <Button block size="lg" leadingIcon={<LocateFixed />} onClick={allow} disabled={locating} autoFocus>
             {locating ? 'Finding you…' : 'Allow location'}
           </Button>
           <Button block size="lg" variant="ghost" onClick={() => finish(null, 'skipped')}>
-            Show {catalog.city.name}
+            Show {catalog.defaultCity.name}
           </Button>
         </div>
       </div>

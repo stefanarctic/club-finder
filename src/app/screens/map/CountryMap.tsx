@@ -1,127 +1,71 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Map as MapLibreMap, setWorkerUrl, type LngLatBoundsLike } from 'maplibre-gl'
-import 'maplibre-gl/dist/maplibre-gl.css'
-import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
+import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { VenuePin } from '../../../design-system'
 import { catalog } from '../../../data/catalog'
-import { isSameDay, isUpcoming } from '../../../data/schedule'
+import { buildListings, buildPins } from '../../../data/discovery'
+import { boundsAround, countryContaining, toLngLatBounds } from '../../../data/geo'
 import { romaniaOutline } from '../../../data/romaniaOutline'
-import { HtmlMarker } from '../../map/HtmlMarker'
-import { mapStyle } from '../../map/mapStyle'
+import { EventMap } from '../../map/EventMap'
+import { useSession } from '../../session'
 import { useNow } from '../../useNow'
-import '../../map/EventMap.css'
 import './CountryMap.css'
-
-setWorkerUrl(workerUrl)
-
-const ROMANIA_SOURCE = 'romania-outline'
-
-/** Romania, with a little margin so the fit isn't clipped by the coast. */
-const ROMANIA: LngLatBoundsLike = [
-  [20.2, 43.6],
-  [29.8, 48.3],
-]
-
-const MAP_PADDING = { top: 48, bottom: 72, left: 28, right: 28 }
-
-const ROUND_LINE = { 'line-join': 'round' as const, 'line-cap': 'round' as const }
-
-function addRomaniaHighlight(map: MapLibreMap) {
-  map.addSource(ROMANIA_SOURCE, { type: 'geojson', data: romaniaOutline })
-  map.addLayer(
-    {
-      id: 'romania-outline-glow',
-      type: 'line',
-      source: ROMANIA_SOURCE,
-      layout: ROUND_LINE,
-      paint: {
-        'line-color': '#ffffff',
-        'line-width': 6,
-        'line-blur': 3,
-        'line-opacity': 0.02,
-      },
-    },
-    'road-minor',
-  )
-  map.addLayer(
-    {
-      id: 'romania-outline',
-      type: 'line',
-      source: ROMANIA_SOURCE,
-      layout: ROUND_LINE,
-      paint: {
-        'line-color': '#ffffff',
-        'line-width': 1.5,
-        'line-blur': 0.5,
-        'line-opacity': 0.12,
-      },
-    },
-    'road-minor',
-  )
-}
 
 export function CountryMap() {
   const now = useNow()
   const navigate = useNavigate()
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [map, setMap] = useState<MapLibreMap | null>(null)
+  const session = useSession()
 
-  const upcoming = useMemo(() => catalog.events.filter((event) => isUpcoming(event, now)), [now])
-  const tonight = upcoming.some((event) => isSameDay(event, now))
-  const city = catalog.city
-  const openBucharest = () => navigate('/')
+  const point = session.userPosition ?? catalog.defaultCity.defaultCenter
+  const country = countryContaining(point, catalog.countries)
+  const viewName = country?.name ?? 'Nearby'
+  const bounds = useMemo(
+    () => toLngLatBounds(country ? country.boundingBox : boundsAround(point)),
+    [country, point],
+  )
+
+  const listings = useMemo(
+    () =>
+      buildListings({
+        venues: catalog.venues,
+        events: catalog.events,
+        origin: session.origin,
+        preferences: { genres: [], budget: null },
+        now,
+      }),
+    [session.origin, now],
+  )
+  const pins = useMemo(
+    () => buildPins(listings, new Set(listings.map((listing) => listing.event.id))),
+    [listings],
+  )
 
   useEffect(() => {
-    document.title = 'Club Finder · Romania'
-  }, [])
+    document.title = `Club Finder · ${viewName}`
+  }, [viewName])
 
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-    const instance = new MapLibreMap({
-      container,
-      style: mapStyle,
-      bounds: ROMANIA,
-      fitBoundsOptions: { padding: MAP_PADDING },
-      minZoom: 4,
-      maxZoom: 10,
-      dragRotate: false,
-      pitchWithRotate: false,
-      touchPitch: false,
-      attributionControl: false,
-    })
-    instance.touchZoomRotate.disableRotation()
-    instance.keyboard.disableRotation()
-
-    instance.on('load', () => {
-      addRomaniaHighlight(instance)
-      instance.fitBounds(ROMANIA, { padding: MAP_PADDING, animate: false })
-      setMap(instance)
-    })
-
-    return () => {
-      instance.remove()
-      setMap(null)
-    }
-  }, [])
+  const openPin = (venueId: string) => {
+    const eventId = pins.find((pin) => pin.venue.id === venueId)?.listings[0]?.event.id
+    if (eventId) navigate(`/events/${eventId}`)
+  }
 
   return (
     <div className="country">
-      <div className="app-map country__map">
-        <div ref={containerRef} className="app-map__canvas" />
-        <div className="app-map__vignette" />
-        {map && (
-          <HtmlMarker map={map} lngLat={[city.defaultCenter.longitude, city.defaultCenter.latitude]} zIndex={2}>
-            <VenuePin
-              tonight={tonight}
-              selected
-              eventCount={upcoming.length}
-              onClick={openBucharest}
-            />
-          </HtmlMarker>
-        )}
-      </div>
+      <EventMap
+        className="country__map"
+        bounds={bounds}
+        boundsKey={country?.id ?? 'nearby'}
+        placeName={viewName}
+        resetBounds={bounds}
+        resetLabel={`Show ${viewName}`}
+        outline={country?.id === 'romania' ? romaniaOutline : undefined}
+        pins={pins}
+        origin={session.origin}
+        userPosition={session.userPosition}
+        followUser={false}
+        selectedVenueId={null}
+        stackVenueId={null}
+        onPinClick={openPin}
+        onBackgroundClick={() => {}}
+      />
     </div>
   )
 }

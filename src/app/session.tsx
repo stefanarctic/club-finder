@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { catalog } from '../data/catalog'
-import { isInsideCity } from '../data/geo'
 import { BUDGETS, GENRES, type Budget, type Genre, type LatLng } from '../data/types'
 
 /*
@@ -8,7 +7,7 @@ import { BUDGETS, GENRES, type Budget, type Genre, type LatLng } from '../data/t
  * choice and opens the map, a new session asks for location again from the map.
  */
 
-export type FallbackReason = 'skipped' | 'outside' | 'denied' | 'unavailable'
+export type FallbackReason = 'skipped' | 'denied' | 'unavailable'
 
 export type LocationChoice = { kind: 'user'; position: LatLng } | { kind: 'fallback'; reason: FallbackReason }
 
@@ -30,6 +29,23 @@ const initialState: SessionState = {
   bannerDismissed: false,
 }
 
+const FALLBACK_REASONS: readonly FallbackReason[] = ['skipped', 'denied', 'unavailable']
+
+function readLocation(value: unknown): LocationChoice | null {
+  if (!value || typeof value !== 'object') return null
+  const loc = value as { kind?: string; reason?: string; position?: Partial<LatLng> }
+  const latitude = loc.position?.latitude
+  const longitude = loc.position?.longitude
+  if (loc.kind === 'user' && typeof latitude === 'number' && typeof longitude === 'number') {
+    return { kind: 'user', position: { latitude, longitude } }
+  }
+  if (loc.kind === 'fallback') {
+    const reason = FALLBACK_REASONS.find((item) => item === loc.reason) ?? 'skipped'
+    return { kind: 'fallback', reason }
+  }
+  return null
+}
+
 function readStored(): SessionState {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY)
@@ -38,6 +54,7 @@ function readStored(): SessionState {
     return {
       ...initialState,
       ...parsed,
+      location: readLocation(parsed.location),
       genres: (parsed.genres ?? []).filter((g): g is Genre => GENRES.includes(g)),
       budget: parsed.budget && BUDGETS.includes(parsed.budget) ? parsed.budget : null,
     }
@@ -47,11 +64,11 @@ function readStored(): SessionState {
 }
 
 type SessionApi = SessionState & {
-  /** The point distances are measured from: the guest, or the city's default center. */
+  /** The point distances are measured from: the guest, wherever they are, or the default city's center. */
   origin: LatLng
-  /** The guest's real position, only when it falls inside the city. */
+  /** The guest's real position, anywhere in the world. */
   userPosition: LatLng | null
-  setLocation: (position: LatLng | null, reason?: Exclude<FallbackReason, 'outside'>) => void
+  setLocation: (position: LatLng | null, reason?: FallbackReason) => void
   setInterests: (genres: Genre[], budget: Budget | null) => void
   setGenres: (genres: Genre[] | ((current: Genre[]) => Genre[])) => void
   setBudget: (budget: Budget | null) => void
@@ -68,11 +85,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [state])
 
   const setLocation = useCallback<SessionApi['setLocation']>((position, reason = 'skipped') => {
-    const location: LocationChoice = position
-      ? isInsideCity(position, catalog.city)
-        ? { kind: 'user', position }
-        : { kind: 'fallback', reason: 'outside' }
-      : { kind: 'fallback', reason }
+    const location: LocationChoice = position ? { kind: 'user', position } : { kind: 'fallback', reason }
     setState((s) => ({ ...s, location, bannerDismissed: false }))
   }, [])
 
@@ -92,7 +105,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return {
       ...state,
       userPosition,
-      origin: userPosition ?? catalog.city.defaultCenter,
+      origin: userPosition ?? catalog.defaultCity.defaultCenter,
       setLocation,
       setInterests,
       setGenres,

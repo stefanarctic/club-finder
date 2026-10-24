@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { bucharest, events, venues } from './bucharest'
+import { romania } from './countries'
 import { buildListings, buildPins } from './discovery'
-import { isInsideCity } from './geo'
+import { cityContaining, countryContaining } from './geo'
 import { isSameDay, isUpcoming, matchesTimeRange, resolveStart, scheduleEvents, weekendEnd } from './schedule'
 
 // Friday 16 Oct 2026.
@@ -39,7 +40,6 @@ describe('seed', () => {
   it.each(loadTimes)('keeps every venue on the map when loaded at %s', (loadedAt) => {
     const scheduled = scheduleEvents(events, loadedAt)
     const listings = buildListings({
-      city: bucharest,
       venues,
       events: scheduled,
       origin: bucharest.defaultCenter,
@@ -62,8 +62,10 @@ describe('seed', () => {
     expect(scheduled.filter((e) => matchesTimeRange(e, 'weekend', at) && !isSameDay(e, at)).length).toBeGreaterThan(3)
   })
 
-  it('places every venue inside Bucharest and covers all three budget bands', () => {
-    expect(venues.every((v) => isInsideCity(v, bucharest))).toBe(true)
+  it('places every venue inside Bucharest by coordinates and covers all three budget bands', () => {
+    expect(venues.every((v) => cityContaining(v, [bucharest])?.id === 'bucharest')).toBe(true)
+    expect(countryContaining(bucharest.defaultCenter, [romania])?.id).toBe('romania')
+    expect(cityContaining({ latitude: 48.8566, longitude: 2.3522 }, [bucharest])).toBeNull()
     const prices = events.map((e) => e.averagePrice)
     expect(prices.some((p) => p < 50)).toBe(true)
     expect(prices.some((p) => p >= 50 && p <= 100)).toBe(true)

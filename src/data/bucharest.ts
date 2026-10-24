@@ -3,6 +3,7 @@ import type { City, ClubEvent, Venue } from './types'
 /*
  * Placeholder seed. Coordinates are real Bucharest neighbourhoods so clustering and distance read
  * correctly; every name, number, address, rating, price, description and photo is invented.
+ * Nothing here names a city: Bucharest is just the bounding box these coordinates fall inside.
  */
 
 export const bucharest: City = {
@@ -18,7 +19,6 @@ export const venues: Venue[] = [
   {
     id: 'v-subsol',
     name: 'Subsol Demo',
-    cityId: 'bucharest',
     neighbourhood: 'Centrul Vechi',
     address: 'Str. Lipscani 00, Centrul Vechi',
     latitude: 44.43165,
@@ -34,7 +34,6 @@ export const venues: Venue[] = [
   {
     id: 'v-atelier',
     name: 'Atelier Placeholder',
-    cityId: 'bucharest',
     neighbourhood: 'Centrul Vechi',
     address: 'Str. Gabroveni 00, Centrul Vechi',
     latitude: 44.4302,
@@ -50,7 +49,6 @@ export const venues: Venue[] = [
   {
     id: 'v-sample-room',
     name: 'Sample Room 12',
-    cityId: 'bucharest',
     neighbourhood: 'Centrul Vechi',
     address: 'Str. Șelari 00, Centrul Vechi',
     latitude: 44.43255,
@@ -65,7 +63,6 @@ export const venues: Venue[] = [
   {
     id: 'v-curtea',
     name: 'Curtea Demo',
-    cityId: 'bucharest',
     neighbourhood: 'Centrul Vechi',
     address: 'Str. Franceză 00, Centrul Vechi',
     latitude: 44.4295,
@@ -82,7 +79,6 @@ export const venues: Venue[] = [
   {
     id: 'v-halo',
     name: 'Halo Placeholder',
-    cityId: 'bucharest',
     neighbourhood: 'Universitate',
     address: 'Bd. Regina Elisabeta 00, Universitate',
     latitude: 44.4362,
@@ -98,7 +94,6 @@ export const venues: Venue[] = [
   {
     id: 'v-bunker',
     name: 'Bunker Seven (demo)',
-    cityId: 'bucharest',
     neighbourhood: 'Universitate',
     address: 'Str. Academiei 00, Universitate',
     latitude: 44.4378,
@@ -113,7 +108,6 @@ export const venues: Venue[] = [
   {
     id: 'v-velvet',
     name: 'Velvet Demo',
-    cityId: 'bucharest',
     neighbourhood: 'Universitate',
     address: 'Str. Edgar Quinet 00, Universitate',
     latitude: 44.4345,
@@ -130,7 +124,6 @@ export const venues: Venue[] = [
   {
     id: 'v-printworks',
     name: 'Printworks Sample',
-    cityId: 'bucharest',
     neighbourhood: 'Cotroceni',
     address: 'Bd. Geniului 00, Cotroceni',
     latitude: 44.4352,
@@ -146,7 +139,6 @@ export const venues: Venue[] = [
   {
     id: 'v-casa',
     name: 'Casa Placeholder',
-    cityId: 'bucharest',
     neighbourhood: 'Cotroceni',
     address: 'Str. Dr. Lister 00, Cotroceni',
     latitude: 44.4305,
@@ -163,7 +155,6 @@ export const venues: Venue[] = [
   {
     id: 'v-pier',
     name: 'Pier Demo',
-    cityId: 'bucharest',
     neighbourhood: 'Herăstrău',
     address: 'Aleea Parcului 00, Herăstrău',
     latitude: 44.4712,
@@ -178,7 +169,6 @@ export const venues: Venue[] = [
   {
     id: 'v-lumen',
     name: 'Lumen Placeholder',
-    cityId: 'bucharest',
     neighbourhood: 'Herăstrău',
     address: 'Șos. Kiseleff 00, Herăstrău',
     latitude: 44.4675,
@@ -193,7 +183,6 @@ export const venues: Venue[] = [
   {
     id: 'v-noir',
     name: 'Noir Sample',
-    cityId: 'bucharest',
     neighbourhood: 'Herăstrău',
     address: 'Bd. Aviatorilor 00, Herăstrău',
     latitude: 44.474,
@@ -210,7 +199,6 @@ export const venues: Venue[] = [
   {
     id: 'v-floreasca-lounge',
     name: 'Floreasca Demo Lounge',
-    cityId: 'bucharest',
     neighbourhood: 'Floreasca',
     address: 'Calea Floreasca 00, Floreasca',
     latitude: 44.4635,
@@ -225,7 +213,6 @@ export const venues: Venue[] = [
   {
     id: 'v-studio',
     name: 'Studio Placeholder',
-    cityId: 'bucharest',
     neighbourhood: 'Floreasca',
     address: 'Str. Barbu Văcărescu 00, Floreasca',
     latitude: 44.46,
@@ -240,7 +227,6 @@ export const venues: Venue[] = [
   {
     id: 'v-garage',
     name: 'Garage 3 (demo)',
-    cityId: 'bucharest',
     neighbourhood: 'Floreasca',
     address: 'Str. Dinu Lipatti 00, Floreasca',
     latitude: 44.4578,

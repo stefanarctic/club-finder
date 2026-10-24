@@ -8,21 +8,30 @@ export type Budget = (typeof BUDGETS)[number]
 
 export type LatLng = { latitude: number; longitude: number }
 
+export type BoundingBox = { north: number; south: number; west: number; east: number }
+
 export type City = {
   id: string
   name: string
-  boundingBox: { north: number; south: number; west: number; east: number }
+  boundingBox: BoundingBox
   defaultCenter: LatLng
   /** Shown wherever the fallback origin is named, e.g. "Distances are measured from Piața Unirii". */
   defaultCenterName: string
 }
 
+/** A country is only a bounding box the map can open on. Events are not stored against it. */
+export type Country = {
+  id: string
+  name: string
+  boundingBox: BoundingBox
+}
+
 export type Venue = {
   id: string
   name: string
-  cityId: string
   neighbourhood: string
   address: string
+  /** The city is whichever city bounds contain this point. It is not stored on the venue. */
   latitude: number
   longitude: number
   /** Local paths, served from `public/photos`. */

@@ -1,7 +1,7 @@
 import { distanceKm } from './geo'
 import { matchedGenres, reasonParts, score, type Preferences } from './ranking'
 import { hasStarted, isSameDay, isUpcoming, matchesTimeRange, type ScheduledEvent, type TimeRange } from './schedule'
-import type { City, Genre, LatLng, Venue } from './types'
+import type { Genre, LatLng, Venue } from './types'
 
 /*
  * One definition of "upcoming", "same day" and "for you" shared by the map and the list.
@@ -22,7 +22,6 @@ export type Listing = {
 }
 
 export type DiscoveryContext = {
-  city: City
   venues: Venue[]
   events: ScheduledEvent[]
   origin: LatLng
@@ -30,9 +29,9 @@ export type DiscoveryContext = {
   now: Date
 }
 
-/** Every upcoming event in the city, scored. Ended events are dropped before scoring. */
-export function buildListings({ city, venues, events, origin, preferences, now }: DiscoveryContext): Listing[] {
-  const venuesById = new Map(venues.filter((v) => v.cityId === city.id).map((v) => [v.id, v]))
+/** Every upcoming event, scored from its coordinates. Ended events are dropped before scoring. */
+export function buildListings({ venues, events, origin, preferences, now }: DiscoveryContext): Listing[] {
+  const venuesById = new Map(venues.map((v) => [v.id, v]))
   const listings: Listing[] = []
   for (const event of events) {
     const venue = venuesById.get(event.venueId)

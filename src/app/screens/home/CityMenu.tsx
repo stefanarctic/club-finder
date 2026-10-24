@@ -4,7 +4,7 @@ import { ChevronDown, MapPin, SlidersHorizontal, X } from 'lucide-react'
 import { IconButton } from '../../../design-system'
 import type { SortKey } from '../../../data/discovery'
 import type { TimeRange } from '../../../data/schedule'
-import type { Budget, Genre } from '../../../data/types'
+import type { Budget, City, Genre } from '../../../data/types'
 import { ListControls } from './ListControls'
 import './CityMenu.css'
 
@@ -30,6 +30,9 @@ function placeMenu(anchor: HTMLElement): MenuBox {
 }
 
 type CityMenuProps = {
+  cities: City[]
+  cityId: string
+  onCityChange: (cityId: string) => void
   cityName: string
   dateLabel: string
   eventCount: number
@@ -47,6 +50,9 @@ type CityMenuProps = {
 }
 
 export function CityMenu({
+  cities,
+  cityId,
+  onCityChange,
   cityName,
   dateLabel,
   eventCount,
@@ -185,6 +191,9 @@ export function CityMenu({
               </div>
 
               <ListControls
+                cities={cities}
+                cityId={cityId}
+                onCityChange={onCityChange}
                 timeRange={timeRange}
                 onTimeRangeChange={onTimeRangeChange}
                 sort={sort}

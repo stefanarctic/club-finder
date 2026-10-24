@@ -12,7 +12,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import { Navigation } from 'lucide-react'
 import { ClusterPin, IconButton, UserDot, VenuePin, cx } from '../../design-system'
 import type { VenuePinData } from '../../data/discovery'
-import type { City, LatLng } from '../../data/types'
+import type { LatLng } from '../../data/types'
 import { HtmlMarker } from './HtmlMarker'
 import { mapStyle } from './mapStyle'
 import './EventMap.css'
@@ -21,7 +21,11 @@ import './EventMap.css'
 setWorkerUrl(workerUrl)
 
 const SOURCE_ID = 'venues'
-const MIN_OPENING_ZOOM = 11
+const OUTLINE_SOURCE = 'region-outline'
+const FIT_PADDING = { top: 56, bottom: 56, left: 24, right: 24 }
+const FIT_MAX_ZOOM = 14
+
+const ROUND_LINE = { 'line-join': 'round' as const, 'line-cap': 'round' as const }
 
 type VisibleMarker =
   | { kind: 'venue'; key: string; venueId: string }
@@ -36,12 +40,26 @@ type VisibleMarker =
     }
 
 type EventMapProps = {
-  city: City
+  /** Opening frame, and the frame `boundsKey` flies back to. The map itself is the whole world. */
+  bounds: LngLatBoundsLike
+  /** Change this to fly to `bounds` again — picking the same city twice still counts. */
+  boundsKey: string
+  /** Keeps a city frame from opening so wide that every venue collapses into one cluster. */
+  fitMinZoom?: number
+  /** Named in the recenter control when it returns to `origin` rather than `resetBounds`. */
+  placeName: string
+  /** When set, the corner control fits this frame instead of recentering on the guest. */
+  resetBounds?: LngLatBoundsLike
+  resetLabel?: string
+  /** Optional country outline drawn under the roads. */
+  outline?: GeoJSON.FeatureCollection
   /** Pins to draw. Unmatched pins are dimmed; leave them out to hide them. */
   pins: VenuePinData[]
   /** Map center and distance origin: the guest, or the city's default center. */
   origin: LatLng
   userPosition: LatLng | null
+  /** Ease onto a position granted after the map opened. Off when that point is outside the opening frame. */
+  followUser?: boolean
   selectedVenueId: string | null
   /** Venue whose event stack is open, rendered from `stackContent`. */
   stackVenueId: string | null
@@ -73,25 +91,68 @@ function toFeatureCollection(pins: VenuePinData[]): GeoJSON.FeatureCollection<Ge
   }
 }
 
-/** Bounds centered on `center` that still contain every pin, so the opening view shows them all. */
-function initialBounds(center: LatLng, pins: VenuePinData[]): LngLatBoundsLike {
-  let dLat = 0.01
-  let dLng = 0.01
-  for (const { venue } of pins) {
-    dLat = Math.max(dLat, Math.abs(venue.latitude - center.latitude))
-    dLng = Math.max(dLng, Math.abs(venue.longitude - center.longitude))
+function showFrame(map: MapLibreMap, bounds: LngLatBoundsLike, minZoom: number | undefined, duration: number) {
+  const camera = map.cameraForBounds(bounds, { padding: FIT_PADDING, maxZoom: FIT_MAX_ZOOM })
+  if (!camera || camera.zoom == null) {
+    map.fitBounds(bounds, { padding: FIT_PADDING, maxZoom: FIT_MAX_ZOOM, duration })
+    return
   }
-  return [
-    [center.longitude - dLng, center.latitude - dLat],
-    [center.longitude + dLng, center.latitude + dLat],
-  ]
+  const target = {
+    center: camera.center,
+    zoom: minZoom == null ? camera.zoom : Math.max(camera.zoom, minZoom),
+  }
+  if (duration <= 0) map.jumpTo(target)
+  else map.easeTo({ ...target, duration })
+}
+
+function setOutline(map: MapLibreMap, outline: GeoJSON.FeatureCollection | undefined) {
+  const lineIds = ['region-outline-glow', 'region-outline'] as const
+  if (!outline) {
+    for (const id of lineIds) if (map.getLayer(id)) map.removeLayer(id)
+    if (map.getSource(OUTLINE_SOURCE)) map.removeSource(OUTLINE_SOURCE)
+    return
+  }
+  const source = map.getSource<GeoJSONSource>(OUTLINE_SOURCE)
+  if (source) {
+    source.setData(outline)
+    return
+  }
+  map.addSource(OUTLINE_SOURCE, { type: 'geojson', data: outline })
+  const before = map.getLayer('road-minor') ? 'road-minor' : undefined
+  map.addLayer(
+    {
+      id: 'region-outline-glow',
+      type: 'line',
+      source: OUTLINE_SOURCE,
+      layout: ROUND_LINE,
+      paint: { 'line-color': '#ffffff', 'line-width': 6, 'line-blur': 3, 'line-opacity': 0.02 },
+    },
+    before,
+  )
+  map.addLayer(
+    {
+      id: 'region-outline',
+      type: 'line',
+      source: OUTLINE_SOURCE,
+      layout: ROUND_LINE,
+      paint: { 'line-color': '#ffffff', 'line-width': 1.5, 'line-blur': 0.5, 'line-opacity': 0.12 },
+    },
+    before,
+  )
 }
 
 export function EventMap({
-  city,
+  bounds,
+  boundsKey,
+  fitMinZoom,
+  placeName,
+  resetBounds,
+  resetLabel,
+  outline,
   pins,
   origin,
   userPosition,
+  followUser = true,
   selectedVenueId,
   stackVenueId,
   stackContent,
@@ -112,6 +173,14 @@ export function EventMap({
   onBackgroundClickRef.current = onBackgroundClick
   const userPositionRef = useRef(userPosition)
   userPositionRef.current = userPosition
+  const boundsRef = useRef(bounds)
+  boundsRef.current = bounds
+  const boundsKeyRef = useRef(boundsKey)
+  boundsKeyRef.current = boundsKey
+  const fitMinZoomRef = useRef(fitMinZoom)
+  fitMinZoomRef.current = fitMinZoom
+  // The frame the map was actually fitted to. A later key change flies there again.
+  const appliedKey = useRef<string | null>(null)
   // True when the map opened before a position existed, so a later grant should move the camera.
   const flyToGrantedPosition = useRef(false)
 
@@ -122,31 +191,25 @@ export function EventMap({
     const container = containerRef.current
     if (!container) return
     flyToGrantedPosition.current = userPositionRef.current == null
-    const { north, south, west, east } = city.boundingBox
-    const pad = 0.08
     const instance = new MapLibreMap({
       container,
       style: mapStyle,
-      bounds: initialBounds(origin, pinsRef.current),
-      fitBoundsOptions: { padding: { top: 56, bottom: 56, left: 24, right: 24 }, maxZoom: 14 },
-      maxBounds: [
-        [west - pad, south - pad],
-        [east + pad, north + pad],
-      ],
-      minZoom: 10,
+      bounds: boundsRef.current,
+      fitBoundsOptions: { padding: FIT_PADDING, maxZoom: FIT_MAX_ZOOM },
+      minZoom: 0,
       maxZoom: 18,
       dragRotate: false,
       pitchWithRotate: false,
       touchPitch: false,
       attributionControl: false,
     })
-    // On a short phone map, fitting every pin around a fixed center can zoom out past the city.
-    if (instance.getZoom() < MIN_OPENING_ZOOM) instance.setZoom(MIN_OPENING_ZOOM)
     if (import.meta.env.DEV) (window as unknown as { __map: unknown }).__map = instance
     instance.touchZoomRotate.disableRotation()
     instance.keyboard.disableRotation()
 
     instance.on('load', () => {
+      showFrame(instance, boundsRef.current, fitMinZoomRef.current, 0)
+      appliedKey.current = boundsKeyRef.current
       instance.addSource(SOURCE_ID, {
         type: 'geojson',
         data: toFeatureCollection(pinsRef.current),
@@ -181,6 +244,18 @@ export function EventMap({
     }
     // The map is created once; later prop changes are applied by the effects below.
   }, [])
+
+  // Picking a city (or opening another country) moves the camera without locking it there.
+  useEffect(() => {
+    if (!map || appliedKey.current === boundsKey) return
+    appliedKey.current = boundsKey
+    showFrame(map, bounds, fitMinZoom, 700)
+  }, [map, bounds, boundsKey, fitMinZoom])
+
+  useEffect(() => {
+    if (!map) return
+    setOutline(map, outline)
+  }, [map, outline])
 
   // Push pin data into the clustered source.
   useEffect(() => {
@@ -241,12 +316,13 @@ export function EventMap({
   useEffect(() => {
     if (!map || !userPosition || !flyToGrantedPosition.current) return
     flyToGrantedPosition.current = false
+    if (!followUser) return
     map.easeTo({
       center: [userPosition.longitude, userPosition.latitude],
       zoom: Math.max(map.getZoom(), 14),
       duration: 800,
     })
-  }, [map, userPosition])
+  }, [map, userPosition, followUser])
 
   // Give an opening stack room above its pin.
   useEffect(() => {
@@ -275,8 +351,19 @@ export function EventMap({
   }
 
   const recenter = () => {
-    map?.easeTo({ center: [origin.longitude, origin.latitude], zoom: Math.max(map.getZoom(), 13), duration: 600 })
+    if (!map) return
+    if (resetBounds) {
+      showFrame(map, resetBounds, undefined, 600)
+      return
+    }
+    map.easeTo({ center: [origin.longitude, origin.latitude], zoom: Math.max(map.getZoom(), 13), duration: 600 })
   }
+
+  const recenterLabel = resetBounds
+    ? (resetLabel ?? `Show ${placeName}`)
+    : userPosition
+      ? 'Recenter on me'
+      : `Recenter on ${placeName}`
 
   const stackPin = stackVenueId ? pinsById.get(stackVenueId) : undefined
 
@@ -341,7 +428,7 @@ export function EventMap({
 
       <div className="app-map__top">
         {topBar}
-        <IconButton label={userPosition ? 'Recenter on me' : `Recenter on ${city.defaultCenterName}`} variant="glass" onClick={recenter}>
+        <IconButton label={recenterLabel} variant="glass" onClick={recenter}>
           <Navigation />
         </IconButton>
       </div>

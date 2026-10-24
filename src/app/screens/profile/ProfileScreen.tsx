@@ -1,14 +1,14 @@
 import { useEffect } from 'react'
 import { User } from 'lucide-react'
 import { catalog } from '../../../data/catalog'
+import { cityContaining } from '../../../data/geo'
 import { budgetLabels } from '../../format'
 import { useSession, type FallbackReason } from '../../session'
 import { ScreenFrame } from '../../shell/ScreenFrame'
 import './ProfileScreen.css'
 
 const fallbackReason: Record<FallbackReason, string> = {
-  skipped: 'Continued with Bucharest.',
-  outside: 'You’re outside Bucharest.',
+  skipped: `Continued with ${catalog.defaultCity.name}.`,
   denied: 'Location not shared.',
   unavailable: 'Couldn’t find your location.',
 }
@@ -68,7 +68,7 @@ export function ProfileScreen() {
 }
 
 function describeLocation(location: ReturnType<typeof useSession>['location']): { subtitle: string; detail: string } {
-  const center = catalog.city.defaultCenterName
+  const center = catalog.defaultCity.defaultCenterName
   if (!location) {
     return {
       subtitle: 'Location not chosen',
@@ -76,8 +76,9 @@ function describeLocation(location: ReturnType<typeof useSession>['location']): 
     }
   }
   if (location.kind === 'user') {
+    const city = cityContaining(location.position, catalog.cities)
     return {
-      subtitle: 'In Bucharest',
+      subtitle: city ? `In ${city.name}` : 'Location shared',
       detail: 'Shared. Distances are measured from your location.',
     }
   }

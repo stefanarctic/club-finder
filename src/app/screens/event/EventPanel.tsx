@@ -175,7 +175,7 @@ function EventDetail({
         <div className="event-panel__facts">
           <InfoRow icon={<Navigation />} label="Distance">
             <span className="cf-mono">{formatDistance(listing.distanceKm)}</span>{' '}
-            {userPosition ? 'from you' : `from ${catalog.city.defaultCenterName}`}
+            {userPosition ? 'from you' : `from ${catalog.defaultCity.defaultCenterName}`}
           </InfoRow>
           <InfoRow icon={<MapPin />} label="Address">
             {venue.address}

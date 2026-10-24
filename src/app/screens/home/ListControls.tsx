@@ -2,7 +2,7 @@ import { SlidersHorizontal, Wallet } from 'lucide-react'
 import { Button, Chip, SegmentedControl, Switch } from '../../../design-system'
 import type { SortKey } from '../../../data/discovery'
 import type { TimeRange } from '../../../data/schedule'
-import { BUDGETS, GENRES, MAX_GENRE_PICKS, type Budget, type Genre } from '../../../data/types'
+import { BUDGETS, GENRES, MAX_GENRE_PICKS, type Budget, type City, type Genre } from '../../../data/types'
 import { budgetLabels } from '../../format'
 
 const timeRangeOptions: { value: TimeRange; label: string }[] = [
@@ -19,6 +19,9 @@ const sortOptions: { value: SortKey; label: string }[] = [
 ]
 
 type ListControlsProps = {
+  cities: City[]
+  cityId: string
+  onCityChange: (cityId: string) => void
   timeRange: TimeRange
   onTimeRangeChange: (range: TimeRange) => void
   sort: SortKey
@@ -34,6 +37,9 @@ type ListControlsProps = {
 }
 
 export function ListControls({
+  cities,
+  cityId,
+  onCityChange,
   timeRange,
   onTimeRangeChange,
   sort,
@@ -81,6 +87,18 @@ export function ListControls({
 
       {expanded && (
         <div id="home-filters" className="home-controls__panel">
+          <div className="home-controls__group">
+            <p className="home-controls__label">
+              City <span className="home-controls__hint">zooms the map</span>
+            </p>
+            <div className="home-controls__chips" role="group" aria-label="City">
+              {cities.map((city) => (
+                <Chip key={city.id} selected={city.id === cityId} onSelectedChange={() => onCityChange(city.id)}>
+                  {city.name}
+                </Chip>
+              ))}
+            </div>
+          </div>
           <div className="home-controls__group">
             <p className="home-controls__label">
               Genres

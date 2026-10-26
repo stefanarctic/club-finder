@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { cx } from '../cx'
 import './Cover.css'
 
@@ -27,6 +27,9 @@ function hash(value: string): number {
  * them reads as one palette, and are explicitly labelled so nobody mistakes them for real photos.
  */
 export function Cover({ src, alt = '', seed, className, children }: CoverProps) {
+  const [failed, setFailed] = useState(false)
+  useEffect(() => setFailed(false), [src])
+  const visible = Boolean(src) && !failed
   const h = hash(seed)
   const hue = 245 + (h % 66)
   const pattern = patterns[(h >> 8) % patterns.length]
@@ -38,8 +41,12 @@ export function Cover({ src, alt = '', seed, className, children }: CoverProps) 
   } as CSSProperties
 
   return (
-    <div className={cx('cf-cover', !src && `cf-cover--${pattern}`, className)} style={style}>
-      {src ? <img src={src} alt={alt} loading="lazy" /> : <span className="cf-cover__placeholder">placeholder</span>}
+    <div className={cx('cf-cover', !visible && `cf-cover--${pattern}`, className)} style={style}>
+      {visible ? (
+        <img src={src ?? ''} alt={alt} loading="lazy" onError={() => setFailed(true)} />
+      ) : (
+        <span className="cf-cover__placeholder">placeholder</span>
+      )}
       {children}
     </div>
   )

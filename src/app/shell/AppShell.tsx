@@ -13,7 +13,7 @@ const tabs: { to: string; label: string; icon: LucideIcon; match: (pathname: str
   },
   { to: '/map', label: 'Map', icon: Map, match: (pathname) => pathname === '/map' },
   { to: '/tickets', label: 'Tickets', icon: Ticket, match: (pathname) => pathname === '/tickets' },
-  { to: '/profile', label: 'Profile', icon: User, match: (pathname) => pathname === '/profile' },
+  { to: '/profile', label: 'Profile', icon: User, match: (pathname) => pathname === '/profile' || pathname.startsWith('/profile/') },
 ]
 
 export function AppShell() {

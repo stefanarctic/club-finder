@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { catalog } from '../../../data/catalog'
 import { buildListings, buildPins } from '../../../data/discovery'
+import { useLiveCatalog } from '../../../data/LiveCatalog'
 import { boundsAround, countryContaining, toLngLatBounds } from '../../../data/geo'
 import { romaniaOutline } from '../../../data/romaniaOutline'
 import { EventMap } from '../../map/EventMap'
@@ -13,6 +14,7 @@ export function CountryMap() {
   const now = useNow()
   const navigate = useNavigate()
   const session = useSession()
+  const live = useLiveCatalog()
 
   const point = session.userPosition ?? catalog.defaultCity.defaultCenter
   const country = countryContaining(point, catalog.countries)
@@ -25,13 +27,13 @@ export function CountryMap() {
   const listings = useMemo(
     () =>
       buildListings({
-        venues: catalog.venues,
-        events: catalog.events,
+        venues: live.venues,
+        events: live.events,
         origin: session.origin,
         preferences: { genres: [], budget: null },
         now,
       }),
-    [session.origin, now],
+    [live.venues, live.events, session.origin, now],
   )
   const pins = useMemo(
     () => buildPins(listings, new Set(listings.map((listing) => listing.event.id))),

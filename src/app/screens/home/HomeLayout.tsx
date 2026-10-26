@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { Banner, Button, EmptyState, EventCard, SectionHeader } from '../../../design-system'
 import { catalog } from '../../../data/catalog'
+import { useLiveCatalog } from '../../../data/LiveCatalog'
+import { photoUrl } from '../../../data/photos'
 import {
   buildListings,
   buildPins,
@@ -61,6 +63,7 @@ export function HomeLayout() {
   const [scrollTarget, setScrollTarget] = useState<{ eventId: string } | null>(null)
 
   const { origin, genres, budget } = session
+  const live = useLiveCatalog()
 
   const selectedCity = useMemo(() => {
     const picked = catalog.cities.find((city) => city.id === pickedCityId)
@@ -75,13 +78,13 @@ export function HomeLayout() {
   const listings = useMemo(
     () =>
       buildListings({
-        venues: catalog.venues,
-        events: catalog.events,
+        venues: live.venues,
+        events: live.events,
         origin,
         preferences: { genres, budget },
         now,
       }),
-    [origin, genres, budget, now],
+    [live.venues, live.events, origin, genres, budget, now],
   )
 
   const visible = useMemo(
@@ -161,7 +164,7 @@ export function HomeLayout() {
           live={listing.live}
           selected={listing.venue.id === (focusVenueId ?? selectedVenueId)}
           moreAtVenue={atVenue > 1 ? atVenue - 1 : undefined}
-          image={listing.event.image}
+          image={photoUrl(listing.event.image)}
           onSelect={openEvent}
         />
       </li>
@@ -221,7 +224,26 @@ export function HomeLayout() {
           </Banner>
         )}
 
-        {visible.length === 0 ? (
+        {live.status === 'loading' ? (
+          <EmptyState title="Loading events" />
+        ) : live.status === 'unconfigured' ? (
+          <EmptyState title="Firebase isn’t configured">
+            Add the web app keys from `.env.example` to a local `.env`, then restart the dev server.
+          </EmptyState>
+        ) : live.status === 'error' && listings.length === 0 ? (
+          <EmptyState title="Couldn’t load events">{live.error}</EmptyState>
+        ) : listings.length === 0 ? (
+          <EmptyState
+            title="No upcoming events"
+            action={
+              <Link to="/profile/events/new" className="cf-btn cf-btn--secondary cf-btn--sm">
+                <span>Add an event</span>
+              </Link>
+            }
+          >
+            A club shows on the map once it has a night that hasn’t ended.
+          </EmptyState>
+        ) : visible.length === 0 ? (
           <EmptyState
             title="Nothing matches"
             action={
@@ -250,7 +272,7 @@ export function HomeLayout() {
         )}
 
         <footer className="home__footer">
-          <p>Placeholder venues and events. Ticketing is coming later.</p>
+          <p>Ticketing is coming later.</p>
         </footer>
       </section>
 
@@ -262,6 +284,8 @@ export function HomeLayout() {
           listing={activeListing}
           siblings={activeListing ? (pinsByVenue.get(activeListing.venue.id)?.listings ?? []) : []}
           now={now}
+          pending={live.status === 'loading'}
+          known={live.events.some((event) => event.id === activeEventId)}
           onOpenEvent={openEvent}
         />
       )}

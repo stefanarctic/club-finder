@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { Cover, Tag } from '../../../design-system'
-import { catalog } from '../../../data/catalog'
+import { useLiveCatalog } from '../../../data/LiveCatalog'
+import { photoUrl } from '../../../data/photos'
 import { isUpcoming, type ScheduledEvent } from '../../../data/schedule'
 import type { Venue } from '../../../data/types'
 import { startLabel } from '../../format'
@@ -10,7 +11,8 @@ import './TicketsScreen.css'
 
 export function TicketsScreen() {
   const now = useNow()
-  const passes = useMemo(() => samplePasses(now), [now])
+  const live = useLiveCatalog()
+  const passes = useMemo(() => samplePasses(live.venues, live.events, now), [live.venues, live.events, now])
 
   useEffect(() => {
     document.title = 'Club Finder · Tickets'
@@ -23,7 +25,7 @@ export function TicketsScreen() {
           <li key={event.id}>
             <article className="pass">
               <div className="pass__top">
-                <Cover seed={event.id} src={event.image} alt="" className="pass__cover" />
+                <Cover seed={event.id} src={photoUrl(event.image)} alt="" className="pass__cover" />
                 <div className="pass__facts">
                   <Tag tone="accent">Sample</Tag>
                   <h2 className="pass__name cf-heading">{event.name}</h2>
@@ -44,10 +46,10 @@ export function TicketsScreen() {
   )
 }
 
-function samplePasses(now: Date): { event: ScheduledEvent; venue: Venue }[] {
-  const venues = new Map(catalog.venues.map((venue) => [venue.id, venue]))
+function samplePasses(venueList: Venue[], events: ScheduledEvent[], now: Date): { event: ScheduledEvent; venue: Venue }[] {
+  const venues = new Map(venueList.map((venue) => [venue.id, venue]))
   const passes: { event: ScheduledEvent; venue: Venue }[] = []
-  for (const event of catalog.events) {
+  for (const event of events) {
     const venue = venues.get(event.venueId)
     if (!venue || !isUpcoming(event, now)) continue
     passes.push({ event, venue })

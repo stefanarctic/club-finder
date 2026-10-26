@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { bucharest, events, venues } from './bucharest'
+import { bucharest } from './bucharest'
 import { romania } from './countries'
 import { buildListings, buildPins } from './discovery'
 import { cityContaining, countryContaining } from './geo'
-import { isSameDay, isUpcoming, matchesTimeRange, resolveStart, scheduleEvents, weekendEnd } from './schedule'
+import placeholders from './placeholders.json'
+import { isSameDay, isUpcoming, matchesTimeRange, resolveStart, scheduleEvents, scheduleStoredEvents, weekendEnd } from './schedule'
+import type { ClubEvent, StoredEvent, Venue } from './types'
+
+const venues = placeholders.venues as Venue[]
+const events = placeholders.events as ClubEvent[]
 
 // Friday 16 Oct 2026.
 const friday = (h: number, m = 0) => new Date(2026, 9, 16, h, m)
@@ -23,6 +28,31 @@ describe('resolveStart', () => {
 
   it('rounds load-relative starts to five minutes', () => {
     expect(resolveStart({ minutesFromLoad: 75 }, friday(14, 2))).toEqual(friday(15, 15))
+  })
+})
+
+describe('scheduleStoredEvents', () => {
+  const stored: StoredEvent = {
+    id: 'e',
+    venueId: 'v',
+    name: 'Night',
+    startsAt: '2026-10-24T23:00:00+03:00',
+    durationHours: 7,
+    image: '',
+    averagePrice: 8,
+    currency: 'EUR',
+    genres: ['techno'],
+    description: '',
+  }
+
+  it('keeps the saved instant instead of sliding it to today', () => {
+    const [event] = scheduleStoredEvents([stored])
+    expect(event.startsAt.toISOString()).toBe('2026-10-24T20:00:00.000Z')
+    expect(event.endsAt.toISOString()).toBe('2026-10-25T03:00:00.000Z')
+  })
+
+  it('drops an event whose start cannot be parsed', () => {
+    expect(scheduleStoredEvents([{ ...stored, startsAt: 'not-a-date' }])).toEqual([])
   })
 })
 

@@ -34,20 +34,29 @@ export type Venue = {
   /** The city is whichever city bounds contain this point. It is not stored on the venue. */
   latitude: number
   longitude: number
-  /** Local paths, served from `public/photos`. */
+  /**
+   * Local paths, download URLs, or Places photo resource names (`places/…/photos/…`).
+   * Resource names are resolved at display time and are not copied into storage.
+   */
   images: string[]
-  /** Placeholder, 0–5. */
+  /** Parallel to `images`. Set for Google photos. Empty entries have no credit line. */
+  imageAttributions?: string[]
+  /** 0–5. `0` means the listing has no rating yet. */
   rating: number
   /** Cost of a night out, 1–4. Never the ticket price. */
   priceLevel: 1 | 2 | 3 | 4
   hours: string
   genres: Genre[]
   description: string
+  phone?: string
+  website?: string
+  mapsUrl?: string
+  googlePlaceId?: string
 }
 
 /**
- * When an event starts, relative to the moment the app loads. Absolute dates are never stored
- * because they go stale.
+ * When a placeholder event starts, relative to the moment the tests load it.
+ * Live events store an absolute `startsAt` instead, so a saved night does not move.
  */
 export type EventStart =
   /** Local calendar day offset, `0` meaning today. */
@@ -63,9 +72,26 @@ export type ClubEvent = {
   name: string
   start: EventStart
   durationHours: number
-  /** Local path, served from `public/photos`. */
+  /** Local path, download URL, or a Places photo resource name. Empty when there is no cover. */
   image: string
-  /** Average ticket or door price. */
+  /** Credit line when `image` is a Google photo. */
+  imageAttribution?: string
+  /** Average ticket or door price. `0` means free entry. */
+  averagePrice: number
+  currency: 'EUR'
+  genres: Genre[]
+  description: string
+}
+
+/** An event document. `startsAt` is an ISO 8601 instant and stays on that date. */
+export type StoredEvent = {
+  id: string
+  venueId: string
+  name: string
+  startsAt: string
+  durationHours: number
+  image: string
+  imageAttribution?: string
   averagePrice: number
   currency: 'EUR'
   genres: Genre[]

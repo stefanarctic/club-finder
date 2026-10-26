@@ -97,6 +97,6 @@ export function reasonParts({
   if (sameDay) parts.push('tonight')
   const genre = matchedGenres(event.genres, picks)[0] ?? event.genres[0]
   if (genre) parts.push(genre)
-  parts.push(`about ${event.averagePrice} ${event.currency}`)
+  parts.push(event.averagePrice > 0 ? `about ${event.averagePrice} ${event.currency}` : 'free')
   return parts
 }

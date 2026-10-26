@@ -1,4 +1,4 @@
-import type { ClubEvent, EventStart } from './types'
+import type { ClubEvent, EventStart, StoredEvent } from './types'
 
 export type ScheduledEvent = ClubEvent & { startsAt: Date; endsAt: Date }
 
@@ -45,6 +45,31 @@ export function scheduleEvents(events: ClubEvent[], loadedAt: Date): ScheduledEv
     const startsAt = resolveStart(event.start, loadedAt)
     return { ...event, startsAt, endsAt: new Date(startsAt.getTime() + event.durationHours * HOUR) }
   })
+}
+
+/** Live events already store an absolute start. Invalid instants are dropped. */
+export function scheduleStoredEvents(events: StoredEvent[]): ScheduledEvent[] {
+  const scheduled: ScheduledEvent[] = []
+  for (const event of events) {
+    const startsAt = new Date(event.startsAt)
+    if (Number.isNaN(startsAt.getTime())) continue
+    scheduled.push({
+      id: event.id,
+      venueId: event.venueId,
+      name: event.name,
+      start: { minutesFromLoad: 0 },
+      durationHours: event.durationHours,
+      image: event.image,
+      imageAttribution: event.imageAttribution,
+      averagePrice: event.averagePrice,
+      currency: event.currency,
+      genres: event.genres,
+      description: event.description,
+      startsAt,
+      endsAt: new Date(startsAt.getTime() + event.durationHours * HOUR),
+    })
+  }
+  return scheduled
 }
 
 /** Not ended yet. Started-and-running events count as upcoming. */

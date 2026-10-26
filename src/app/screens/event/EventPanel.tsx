@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { useLocation, useNavigate } from 'react-router'
-import { ArrowLeft, ChevronRight, Clock, ExternalLink, MapPin, Navigation, Share2, Star, Ticket, Wallet } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Clock, ExternalLink, Globe, MapPin, Navigation, Phone, Share2, Star, Ticket, Wallet } from 'lucide-react'
 import {
   Button,
   Cover,
@@ -14,6 +14,7 @@ import {
 } from '../../../design-system'
 import { catalog } from '../../../data/catalog'
 import type { Listing } from '../../../data/discovery'
+import { photoCredit, photoUrl } from '../../../data/photos'
 import { formatDistance } from '../../../data/ranking'
 import { externalMapUrl, startLabel, timeSpanLabel } from '../../format'
 import { useSession } from '../../session'
@@ -26,10 +27,14 @@ type EventPanelProps = {
   /** Every remaining event at the same venue, soonest first. */
   siblings: Listing[]
   now: Date
+  /** True while the live catalog is still opening. */
+  pending: boolean
+  /** The id exists in the database, including when the night has already ended. */
+  known: boolean
   onOpenEvent: (eventId: string) => void
 }
 
-export function EventPanel({ eventId, listing, siblings, now, onOpenEvent }: EventPanelProps) {
+export function EventPanel({ eventId, listing, siblings, now, pending, known, onOpenEvent }: EventPanelProps) {
   const navigate = useNavigate()
   const fromList = Boolean((useLocation().state as { fromList?: boolean } | null)?.fromList)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -60,7 +65,7 @@ export function EventPanel({ eventId, listing, siblings, now, onOpenEvent }: Eve
       {listing ? (
         <EventDetail listing={listing} siblings={siblings} now={now} onBack={back} onOpenEvent={onOpenEvent} headingRef={headingRef} />
       ) : (
-        <MissingEvent ended={catalog.events.some((e) => e.id === eventId)} onBack={back} headingRef={headingRef} />
+        <MissingEvent pending={pending} ended={known} onBack={back} headingRef={headingRef} />
       )}
     </article>
   )
@@ -88,10 +93,14 @@ function EventDetail({
   const [shared, setShared] = useState(false)
 
   const photos = [
-    { seed: event.id, src: event.image },
+    { seed: event.id, src: photoUrl(event.image), attribution: photoCredit(event.image, event.imageAttribution) },
     ...(venue.images.length > 0
-      ? venue.images.map((src, i) => ({ seed: `${venue.id}-${i}`, src }))
-      : [1, 2, 3].map((i) => ({ seed: `${venue.id}-${i}`, src: undefined }))),
+      ? venue.images.map((src, i) => ({
+          seed: `${venue.id}-${i}`,
+          src: photoUrl(src),
+          attribution: photoCredit(src, venue.imageAttributions?.[i]),
+        }))
+      : [1, 2, 3].map((i) => ({ seed: `${venue.id}-${i}`, src: undefined, attribution: undefined }))),
   ]
   const [photoIndex, setPhotoIndex] = useState(0)
   const photo = photos[Math.min(photoIndex, photos.length - 1)]
@@ -146,6 +155,8 @@ function EventDetail({
       </div>
 
       <div className="event-panel__body">
+        {photo.attribution && <p className="event-panel__credit">{photo.attribution}</p>}
+
         <div className="event-panel__tags">
           {listing.live ? <Tag tone="live">On now</Tag> : listing.sameDay && <Tag tone="tonight">Tonight</Tag>}
           {event.genres.map((g) => (
@@ -181,11 +192,30 @@ function EventDetail({
             {venue.address}
           </InfoRow>
           <InfoRow icon={<Clock />} label="Hours">
-            {venue.hours}
+            <span className="event-panel__hours">{venue.hours}</span>
           </InfoRow>
           <InfoRow icon={<Star />} label="Rating">
-            <Rating value={venue.rating} /> <span className="event-panel__aside">placeholder</span>
+            {venue.rating > 0 ? (
+              <>
+                <Rating value={venue.rating} />{' '}
+                <span className="event-panel__aside">{venue.googlePlaceId ? 'Google' : 'placeholder'}</span>
+              </>
+            ) : (
+              <span className="event-panel__aside">Not listed</span>
+            )}
           </InfoRow>
+          {venue.phone && (
+            <InfoRow icon={<Phone />} label="Phone">
+              <a href={`tel:${venue.phone}`}>{venue.phone}</a>
+            </InfoRow>
+          )}
+          {venue.website && (
+            <InfoRow icon={<Globe />} label="Website">
+              <a href={venue.website} target="_blank" rel="noreferrer">
+                {venue.website.replace(/^https?:\/\//, '')}
+              </a>
+            </InfoRow>
+          )}
           <InfoRow icon={<Wallet />} label="Price level">
             <PriceLevel level={venue.priceLevel} />
           </InfoRow>
@@ -238,27 +268,37 @@ function EventDetail({
   )
 }
 
-function MissingEvent({ ended, onBack, headingRef }: { ended: boolean; onBack: () => void; headingRef: HeadingRef }) {
+function MissingEvent({
+  pending,
+  ended,
+  onBack,
+  headingRef,
+}: {
+  pending: boolean
+  ended: boolean
+  onBack: () => void
+  headingRef: HeadingRef
+}) {
   useEffect(() => {
-    document.title = 'Event not found · Club Finder'
-  }, [])
+    document.title = `${pending ? 'Loading the event' : ended ? 'Event ended' : 'Event not found'} · Club Finder`
+  }, [pending, ended])
   return (
     <div className="event-panel__missing">
       <IconButton label="Back to the list" variant="secondary" onClick={onBack}>
         <ArrowLeft />
       </IconButton>
       <h1 id="event-title" ref={headingRef} tabIndex={-1} className="cf-visually-hidden">
-        {ended ? 'Event ended' : 'Event not found'}
+        {pending ? 'Loading the event' : ended ? 'Event ended' : 'Event not found'}
       </h1>
       <EmptyState
-        title={ended ? 'This event has ended' : 'We couldn’t find that event'}
+        title={pending ? 'Loading the event' : ended ? 'This event has ended' : 'We couldn’t find that event'}
         action={
           <Button size="sm" variant="secondary" onClick={onBack}>
             Back to the list
           </Button>
         }
       >
-        {ended ? 'It’s no longer on the map.' : 'The link may be wrong, or the event was removed.'}
+        {pending ? 'Fetching it from the database.' : ended ? 'It’s no longer on the map.' : 'The link may be wrong, or the event was removed.'}
       </EmptyState>
     </div>
   )

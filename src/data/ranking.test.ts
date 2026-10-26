@@ -88,6 +88,16 @@ describe('reason line', () => {
     expect(parts).toEqual(['1.4 km', 'tonight', 'house', 'about 80 EUR'])
   })
 
+  it('says free when entry costs nothing', () => {
+    const parts = reasonParts({
+      event: eventAt(inHours(9), { averagePrice: 0 }),
+      distanceKm: 1.43,
+      sameDay: true,
+      picks: ['house'],
+    })
+    expect(parts).toEqual(['1.4 km', 'tonight', 'house', 'free'])
+  })
+
   it('uses the first genre when the guest skipped and rounds far distances', () => {
     const parts = reasonParts({ event: eventAt(inHours(30)), distanceKm: 12.4, sameDay: false, picks: [] })
     expect(parts).toEqual(['12 km', 'techno', 'about 80 EUR'])

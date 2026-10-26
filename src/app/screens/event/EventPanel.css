@@ -94,6 +94,15 @@
   box-shadow: 0 0 0 2px var(--cf-bg-app), 0 0 0 3.5px var(--cf-uv-300);
 }
 
+.event-panel__credit {
+  font-size: var(--cf-text-xs);
+  color: var(--cf-text-tertiary);
+}
+
+.event-panel__hours {
+  white-space: pre-line;
+}
+
 .event-panel__body {
   display: grid;
   gap: var(--cf-space-4);

@@ -186,6 +186,10 @@
   color: var(--cf-text-secondary);
 }
 
+.event-panel__copy {
+  white-space: pre-line;
+}
+
 .event-panel__others {
   display: grid;
   gap: 2px;
@@ -229,6 +233,11 @@
   width: 16px;
   height: 16px;
   color: var(--cf-text-tertiary);
+}
+
+.event-panel__actions {
+  display: grid;
+  gap: var(--cf-space-2);
 }
 
 .event-panel a.cf-btn {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
-import { useLocation, useNavigate } from 'react-router'
-import { ArrowLeft, ChevronRight, Clock, ExternalLink, Globe, MapPin, Navigation, Phone, Share2, Star, Ticket, Wallet } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router'
+import { ArrowLeft, ChevronRight, Clock, ExternalLink, Globe, MapPin, Navigation, Pencil, Phone, Share2, Star, Ticket, Wallet } from 'lucide-react'
 import {
   Button,
   Cover,
@@ -65,7 +65,7 @@ export function EventPanel({ eventId, listing, siblings, now, pending, known, on
       {listing ? (
         <EventDetail listing={listing} siblings={siblings} now={now} onBack={back} onOpenEvent={onOpenEvent} headingRef={headingRef} />
       ) : (
-        <MissingEvent pending={pending} ended={known} onBack={back} headingRef={headingRef} />
+        <MissingEvent eventId={eventId} pending={pending} ended={known} onBack={back} headingRef={headingRef} />
       )}
     </article>
   )
@@ -223,7 +223,7 @@ function EventDetail({
 
         <section className="event-panel__section">
           <h2 className="cf-label">The night</h2>
-          <p>{event.description}</p>
+          <p className="event-panel__copy">{event.description}</p>
         </section>
         <section className="event-panel__section">
           <h2 className="cf-label">About {venue.name}</h2>
@@ -249,17 +249,25 @@ function EventDetail({
           </section>
         )}
 
-        <a
-          className="cf-btn cf-btn--secondary cf-btn--md cf-btn--block"
-          href={externalMapUrl(venue.latitude, venue.longitude)}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <span>Open in maps</span>
-          <span className="cf-btn__icon">
-            <ExternalLink />
-          </span>
-        </a>
+        <div className="event-panel__actions">
+          <Link className="cf-btn cf-btn--secondary cf-btn--md cf-btn--block" to={`/profile/events/${event.id}`}>
+            <span className="cf-btn__icon">
+              <Pencil />
+            </span>
+            <span>Edit event</span>
+          </Link>
+          <a
+            className="cf-btn cf-btn--secondary cf-btn--md cf-btn--block"
+            href={externalMapUrl(venue.latitude, venue.longitude)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span>Open in maps</span>
+            <span className="cf-btn__icon">
+              <ExternalLink />
+            </span>
+          </a>
+        </div>
         <p className="event-panel__ticket-note">
           <Ticket aria-hidden /> Ticketing is coming later.
         </p>
@@ -269,11 +277,13 @@ function EventDetail({
 }
 
 function MissingEvent({
+  eventId,
   pending,
   ended,
   onBack,
   headingRef,
 }: {
+  eventId: string
   pending: boolean
   ended: boolean
   onBack: () => void
@@ -293,9 +303,19 @@ function MissingEvent({
       <EmptyState
         title={pending ? 'Loading the event' : ended ? 'This event has ended' : 'We couldn’t find that event'}
         action={
-          <Button size="sm" variant="secondary" onClick={onBack}>
-            Back to the list
-          </Button>
+          <>
+            {ended && (
+              <Link className="cf-btn cf-btn--secondary cf-btn--sm" to={`/profile/events/${eventId}`}>
+                <span className="cf-btn__icon">
+                  <Pencil />
+                </span>
+                <span>Edit event</span>
+              </Link>
+            )}
+            <Button size="sm" variant="secondary" onClick={onBack}>
+              Back to the list
+            </Button>
+          </>
         }
       >
         {pending ? 'Fetching it from the database.' : ended ? 'It’s no longer on the map.' : 'The link may be wrong, or the event was removed.'}

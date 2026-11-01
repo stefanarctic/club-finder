@@ -25,7 +25,7 @@ export function TicketsScreen() {
           <li key={event.id}>
             <article className="pass">
               <div className="pass__top">
-                <Cover seed={event.id} src={photoUrl(event.image)} alt="" className="pass__cover" />
+                <Cover seed={event.id} src={photoUrl(event.image, 'card')} alt="" className="pass__cover" />
                 <div className="pass__facts">
                   <Tag tone="accent">Sample</Tag>
                   <h2 className="pass__name cf-heading">{event.name}</h2>

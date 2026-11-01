@@ -164,7 +164,7 @@ export function HomeLayout() {
           live={listing.live}
           selected={listing.venue.id === (focusVenueId ?? selectedVenueId)}
           moreAtVenue={atVenue > 1 ? atVenue - 1 : undefined}
-          image={photoUrl(listing.event.image)}
+          image={photoUrl(listing.event.image, 'card')}
           onSelect={openEvent}
         />
       </li>

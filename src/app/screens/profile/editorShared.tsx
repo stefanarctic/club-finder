@@ -61,7 +61,7 @@ export function ImageList({
     <ul className="editor__photos">
       {images.map((src, index) => (
         <li key={`${src}-${index}`}>
-          <Cover seed={`${src}-${index}`} src={photoUrl(src)} alt="" className="editor__photo" />
+          <Cover seed={`${src}-${index}`} src={photoUrl(src, 'cover')} alt="" className="editor__photo" />
           <div>
             {attributions[index] && <p className="editor__hint">{attributions[index]}</p>}
             <button type="button" className="editor__text-btn" onClick={() => onRemove(index)}>

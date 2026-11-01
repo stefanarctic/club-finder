@@ -228,7 +228,7 @@ export function EventEditor() {
           {form.image && (
             <ul className="editor__photos">
               <li>
-                <Cover seed={id} src={photoUrl(form.image)} alt="" className="editor__photo" />
+                <Cover seed={id} src={photoUrl(form.image, 'cover')} alt="" className="editor__photo" />
                 <div>
                   {photoCredit(form.image, form.imageAttribution) && (
                     <p className="editor__hint">{photoCredit(form.image, form.imageAttribution)}</p>

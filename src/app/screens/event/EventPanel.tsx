@@ -93,14 +93,14 @@ function EventDetail({
   const [shared, setShared] = useState(false)
 
   const photos = [
-    { seed: event.id, src: photoUrl(event.image), attribution: photoCredit(event.image, event.imageAttribution) },
+    { seed: event.id, image: event.image, attribution: photoCredit(event.image, event.imageAttribution) },
     ...(venue.images.length > 0
       ? venue.images.map((src, i) => ({
           seed: `${venue.id}-${i}`,
-          src: photoUrl(src),
+          image: src,
           attribution: photoCredit(src, venue.imageAttributions?.[i]),
         }))
-      : [1, 2, 3].map((i) => ({ seed: `${venue.id}-${i}`, src: undefined, attribution: undefined }))),
+      : [1, 2, 3].map((i) => ({ seed: `${venue.id}-${i}`, image: undefined, attribution: undefined }))),
   ]
   const [photoIndex, setPhotoIndex] = useState(0)
   const photo = photos[Math.min(photoIndex, photos.length - 1)]
@@ -129,7 +129,7 @@ function EventDetail({
   return (
     <>
       <div className="event-panel__hero">
-        <Cover key={photo.seed} seed={photo.seed} src={photo.src} alt="" className="event-panel__cover" />
+        <Cover key={photo.seed} seed={photo.seed} src={photoUrl(photo.image, 'cover')} alt="" className="event-panel__cover" />
         <div className="event-panel__bar">
           <IconButton label="Back to the list" variant="glass" onClick={onBack}>
             <ArrowLeft />
@@ -148,7 +148,7 @@ function EventDetail({
               aria-pressed={i === photoIndex}
               onClick={() => setPhotoIndex(i)}
             >
-              <Cover seed={p.seed} src={p.src} />
+              <Cover seed={p.seed} src={photoUrl(p.image, 'thumb')} />
             </button>
           ))}
         </div>

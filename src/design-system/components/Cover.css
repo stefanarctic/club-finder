@@ -7,10 +7,35 @@
     hsl(var(--cover-hue) 45% 9%);
 }
 
+.cf-cover--photo {
+  background: var(--cf-bg-raised);
+}
+
+.cf-cover__shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgb(255 255 255 / 0.04) 36%,
+      rgb(255 255 255 / 0.34) 50%,
+      rgb(255 255 255 / 0.04) 64%,
+      transparent 100%
+    )
+    0 0 / 200% 100%;
+  animation: cf-shimmer 1.5s ease-in-out infinite;
+}
+
 .cf-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--cf-duration-base) var(--cf-ease-out);
+}
+
+.cf-cover img.is-ready {
+  opacity: 1;
 }
 
 .cf-cover::after {
@@ -75,4 +100,14 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgb(255 255 255 / 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-cover__shimmer {
+    animation: none;
+  }
+
+  .cf-cover img {
+    transition: none;
+  }
 }

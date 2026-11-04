@@ -18,6 +18,7 @@ import { photoCredit, photoUrl } from '../../../data/photos'
 import { formatDistance } from '../../../data/ranking'
 import { externalMapUrl, startLabel, timeSpanLabel } from '../../format'
 import { useSession } from '../../session'
+import { PhotoViewer, type ViewerPhoto } from './PhotoViewer'
 import './EventPanel.css'
 
 type EventPanelProps = {
@@ -109,12 +110,15 @@ function EventDetail({
     photos.push({ seed: event.id, image: '', attribution: undefined })
   }
   const [photoIndex, setPhotoIndex] = useState(0)
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null)
   const photo = photos[Math.min(photoIndex, photos.length - 1)]
+  const viewable: ViewerPhoto[] = photos.filter((item) => item.image.trim())
   const others = siblings.filter((s) => s.event.id !== event.id)
 
   useEffect(() => {
     document.title = `${event.name} · ${venue.name} · Club Finder`
     setPhotoIndex(0)
+    setViewerIndex(null)
   }, [event.id, event.name, venue.name])
 
   const share = async () => {
@@ -135,7 +139,32 @@ function EventDetail({
   return (
     <>
       <div className="event-panel__hero">
-        <Cover key={photo.seed} seed={photo.seed} src={photoUrl(photo.image, 'cover')} alt="" className="event-panel__cover" />
+        <button
+          type="button"
+          className="event-panel__enlarge"
+          disabled={!photo.image.trim()}
+          aria-label={`View ${event.name} photo full screen`}
+          onClick={() => {
+            const at = viewable.findIndex((item) => item.seed === photo.seed)
+            if (at >= 0) setViewerIndex(at)
+          }}
+        >
+          <Cover key={photo.seed} seed={photo.seed} src={photoUrl(photo.image, 'cover')} alt="" className="event-panel__cover" />
+        </button>
+        {viewerIndex !== null && (
+          <PhotoViewer
+            photos={viewable}
+            index={viewerIndex}
+            alt={event.name}
+            onIndex={setViewerIndex}
+            onClose={() => {
+              const chosen = viewable[viewerIndex]
+              const at = chosen ? photos.findIndex((item) => item.seed === chosen.seed) : -1
+              if (at >= 0) setPhotoIndex(at)
+              setViewerIndex(null)
+            }}
+          />
+        )}
         <div className="event-panel__bar">
           <IconButton label="Back to the list" variant="glass" onClick={onBack}>
             <ArrowLeft />

@@ -35,6 +35,25 @@
   position: relative;
 }
 
+.event-panel__enlarge {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: zoom-in;
+}
+
+.event-panel__enlarge:disabled {
+  cursor: default;
+}
+
+.event-panel__enlarge:focus-visible {
+  outline: 2px solid var(--cf-uv-300);
+  outline-offset: 2px;
+}
+
 .event-panel__cover {
   height: clamp(260px, 42vh, 380px);
   mask-image: linear-gradient(to bottom, #000 55%, transparent);

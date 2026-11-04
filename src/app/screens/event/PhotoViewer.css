@@ -1,0 +1,119 @@
+.photo-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--cf-z-toast) + 20);
+  display: grid;
+  place-items: center;
+  padding:
+    calc(3.25rem + env(safe-area-inset-top))
+    var(--cf-space-3)
+    calc(var(--cf-space-4) + env(safe-area-inset-bottom));
+  background: rgb(5 4 7 / 0.92);
+  animation: photo-viewer-in var(--cf-duration-base) var(--cf-ease-out);
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+@keyframes photo-viewer-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.photo-viewer__close {
+  position: absolute;
+  top: calc(var(--cf-space-4) + env(safe-area-inset-top));
+  right: calc(var(--cf-space-4) + env(safe-area-inset-right));
+}
+
+.photo-viewer__stage {
+  position: relative;
+  max-width: 100%;
+}
+
+.photo-viewer__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  /* Center without transform. The icon button's pressed state sets transform: scale(),
+     which would otherwise replace translateY(-50%) and shove the arrow downward. */
+  margin-top: calc(var(--cf-tap-target) / -2);
+}
+
+.photo-viewer__nav--prev {
+  left: var(--cf-space-2);
+}
+
+.photo-viewer__nav--next {
+  right: var(--cf-space-2);
+}
+
+.photo-viewer__frame {
+  display: grid;
+  justify-items: center;
+  gap: var(--cf-space-3);
+  min-width: 0;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+}
+
+.photo-viewer:focus {
+  outline: none;
+}
+
+.photo-viewer__img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(1100px, 100%);
+  max-height: calc(100dvh - 6.5rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  object-fit: contain;
+  border-radius: var(--cf-radius-md);
+  background: var(--cf-bg-raised);
+  box-shadow: var(--cf-elevation-3);
+}
+
+.photo-viewer__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--cf-space-2) var(--cf-space-4);
+  min-height: 1rem;
+}
+
+.photo-viewer__credit,
+.photo-viewer__count {
+  font-size: var(--cf-text-xs);
+  color: var(--cf-text-tertiary);
+}
+
+@media (max-width: 640px) {
+  .photo-viewer {
+    padding-inline: max(var(--cf-space-2), env(safe-area-inset-left));
+  }
+
+  .photo-viewer__img {
+    border-radius: var(--cf-radius-sm);
+  }
+
+  .photo-viewer__nav--prev {
+    left: var(--cf-space-1);
+  }
+
+  .photo-viewer__nav--next {
+    right: var(--cf-space-1);
+  }
+}
+
+@media (min-width: 900px) {
+  .photo-viewer {
+    padding-inline: var(--cf-space-8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-viewer {
+    animation: none;
+  }
+}

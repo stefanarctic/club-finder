@@ -60,6 +60,7 @@ export function scheduleStoredEvents(events: StoredEvent[]): ScheduledEvent[] {
       start: { minutesFromLoad: 0 },
       durationHours: event.durationHours,
       image: event.image,
+      images: event.images,
       imageAttribution: event.imageAttribution,
       averagePrice: event.averagePrice,
       currency: event.currency,

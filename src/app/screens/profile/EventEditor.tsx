@@ -18,6 +18,7 @@ type EventForm = {
   genres: Genre[]
   description: string
   image: string
+  images: string[]
   imageAttribution: string
 }
 
@@ -30,6 +31,7 @@ const emptyForm = (venueId = ''): EventForm => ({
   genres: [],
   description: '',
   image: '',
+  images: [],
   imageAttribution: '',
 })
 
@@ -43,6 +45,7 @@ function toForm(event: StoredEvent): EventForm {
     genres: event.genres,
     description: event.description,
     image: event.image,
+    images: event.images ?? [],
     imageAttribution: event.imageAttribution ?? '',
   }
 }
@@ -124,6 +127,7 @@ export function EventEditor() {
         startsAt,
         durationHours,
         image: form.image.trim(),
+        images: form.images,
         imageAttribution: form.imageAttribution.trim() || undefined,
         averagePrice,
         currency: 'EUR',

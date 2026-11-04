@@ -74,6 +74,8 @@ export type ClubEvent = {
   durationHours: number
   /** Local path, download URL, or a Places photo resource name. Empty when there is no cover. */
   image: string
+  /** Other posters of this same night. Not photos of the club, and not other nights. */
+  images?: string[]
   /** Credit line when `image` is a Google photo. */
   imageAttribution?: string
   /** Average ticket or door price. `0` means free entry. */
@@ -91,6 +93,8 @@ export type StoredEvent = {
   startsAt: string
   durationHours: number
   image: string
+  /** Other posters of this same night. */
+  images?: string[]
   imageAttribution?: string
   averagePrice: number
   currency: 'EUR'

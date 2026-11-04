@@ -92,16 +92,22 @@ function EventDetail({
   const { userPosition } = useSession()
   const [shared, setShared] = useState(false)
 
+  const eventImages = [...new Set([event.image, ...(event.images ?? [])].map((src) => src.trim()).filter(Boolean))]
   const photos = [
-    { seed: event.id, image: event.image, attribution: photoCredit(event.image, event.imageAttribution) },
-    ...(venue.images.length > 0
-      ? venue.images.map((src, i) => ({
-          seed: `${venue.id}-${i}`,
-          image: src,
-          attribution: photoCredit(src, venue.imageAttributions?.[i]),
-        }))
-      : [1, 2, 3].map((i) => ({ seed: `${venue.id}-${i}`, image: undefined, attribution: undefined }))),
+    ...eventImages.map((src, i) => ({
+      seed: `${event.id}-poster-${i}`,
+      image: src,
+      attribution: photoCredit(src, event.imageAttribution),
+    })),
+    ...venue.images.map((src, i) => ({
+      seed: `${venue.id}-${i}`,
+      image: src,
+      attribution: photoCredit(src, venue.imageAttributions?.[i]),
+    })),
   ]
+  if (photos.length === 0) {
+    photos.push({ seed: event.id, image: '', attribution: undefined })
+  }
   const [photoIndex, setPhotoIndex] = useState(0)
   const photo = photos[Math.min(photoIndex, photos.length - 1)]
   const others = siblings.filter((s) => s.event.id !== event.id)
@@ -144,7 +150,13 @@ function EventDetail({
               key={p.seed}
               type="button"
               className={cx('event-panel__thumb', i === photoIndex && 'is-active')}
-              aria-label={i === 0 ? 'Event image' : `Venue photo ${i}`}
+              aria-label={
+                i < eventImages.length
+                  ? i === 0
+                    ? 'Event image'
+                    : `Event poster ${i + 1}`
+                  : `Club photo ${i - eventImages.length + 1}`
+              }
               aria-pressed={i === photoIndex}
               onClick={() => setPhotoIndex(i)}
             >

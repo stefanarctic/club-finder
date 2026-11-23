@@ -1,6 +1,12 @@
-import type { ClubEvent, EventStart, StoredEvent } from './types'
+import { placeKey, type ClubEvent, type EventStart, type StoredEvent, type Venue } from './types'
 
-export type ScheduledEvent = ClubEvent & { startsAt: Date; endsAt: Date }
+export type ScheduledEvent = ClubEvent & {
+  startsAt: Date
+  endsAt: Date
+  /** Set for live events. Placeholder nights still join a separate venue list. */
+  place?: Venue
+  createdBy?: string
+}
 
 export type TimeRange = 'tonight' | 'weekend' | 'all'
 
@@ -53,9 +59,10 @@ export function scheduleStoredEvents(events: StoredEvent[]): ScheduledEvent[] {
   for (const event of events) {
     const startsAt = new Date(event.startsAt)
     if (Number.isNaN(startsAt.getTime())) continue
+    const place: Venue = { id: placeKey(event.venue), ...event.venue }
     scheduled.push({
       id: event.id,
-      venueId: event.venueId,
+      venueId: place.id,
       name: event.name,
       start: { minutesFromLoad: 0 },
       durationHours: event.durationHours,
@@ -66,6 +73,8 @@ export function scheduleStoredEvents(events: StoredEvent[]): ScheduledEvent[] {
       currency: event.currency,
       genres: event.genres,
       description: event.description,
+      place,
+      createdBy: event.createdBy,
       startsAt,
       endsAt: new Date(startsAt.getTime() + event.durationHours * HOUR),
     })

@@ -13,9 +13,11 @@ import {
   cx,
 } from '../../../design-system'
 import { catalog } from '../../../data/catalog'
+import { useLiveCatalog } from '../../../data/LiveCatalog'
 import type { Listing } from '../../../data/discovery'
 import { photoCredit, photoUrl } from '../../../data/photos'
 import { formatDistance } from '../../../data/ranking'
+import { canEditEvent, useAccount } from '../../auth'
 import { externalMapUrl, startLabel, timeSpanLabel } from '../../format'
 import { useSession } from '../../session'
 import { PhotoViewer, type ViewerPhoto } from './PhotoViewer'
@@ -41,6 +43,11 @@ export function EventPanel({ eventId, listing, siblings, now, pending, known, on
   const scrollRef = useRef<HTMLDivElement>(null)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
+  const live = useLiveCatalog()
+  const { account } = useAccount()
+  const stored = live.storedEvents.find((item) => item.id === eventId)
+  const editable = canEditEvent(account, listing?.event.createdBy ?? stored?.createdBy)
+
   const back = () => {
     if (fromList) navigate(-1)
     else navigate('/', { replace: true })
@@ -64,9 +71,24 @@ export function EventPanel({ eventId, listing, siblings, now, pending, known, on
   return (
     <article className="event-panel" ref={scrollRef} aria-labelledby="event-title">
       {listing ? (
-        <EventDetail listing={listing} siblings={siblings} now={now} onBack={back} onOpenEvent={onOpenEvent} headingRef={headingRef} />
+        <EventDetail
+          listing={listing}
+          siblings={siblings}
+          now={now}
+          canEdit={editable}
+          onBack={back}
+          onOpenEvent={onOpenEvent}
+          headingRef={headingRef}
+        />
       ) : (
-        <MissingEvent eventId={eventId} pending={pending} ended={known} onBack={back} headingRef={headingRef} />
+        <MissingEvent
+          eventId={eventId}
+          pending={pending}
+          ended={known}
+          canEdit={editable}
+          onBack={back}
+          headingRef={headingRef}
+        />
       )}
     </article>
   )
@@ -78,6 +100,7 @@ function EventDetail({
   listing,
   siblings,
   now,
+  canEdit,
   onBack,
   onOpenEvent,
   headingRef,
@@ -85,6 +108,7 @@ function EventDetail({
   listing: Listing
   siblings: Listing[]
   now: Date
+  canEdit: boolean
   onBack: () => void
   onOpenEvent: (eventId: string) => void
   headingRef: HeadingRef
@@ -291,12 +315,14 @@ function EventDetail({
         )}
 
         <div className="event-panel__actions">
-          <Link className="cf-btn cf-btn--secondary cf-btn--md cf-btn--block" to={`/profile/events/${event.id}`}>
-            <span className="cf-btn__icon">
-              <Pencil />
-            </span>
-            <span>Edit event</span>
-          </Link>
+          {canEdit && (
+            <Link className="cf-btn cf-btn--secondary cf-btn--md cf-btn--block" to={`/profile/events/${event.id}`}>
+              <span className="cf-btn__icon">
+                <Pencil />
+              </span>
+              <span>Edit event</span>
+            </Link>
+          )}
           <a
             className="cf-btn cf-btn--secondary cf-btn--md cf-btn--block"
             href={externalMapUrl(venue.latitude, venue.longitude)}
@@ -321,12 +347,14 @@ function MissingEvent({
   eventId,
   pending,
   ended,
+  canEdit,
   onBack,
   headingRef,
 }: {
   eventId: string
   pending: boolean
   ended: boolean
+  canEdit: boolean
   onBack: () => void
   headingRef: HeadingRef
 }) {
@@ -345,7 +373,7 @@ function MissingEvent({
         title={pending ? 'Loading the event' : ended ? 'This event has ended' : 'We couldn’t find that event'}
         action={
           <>
-            {ended && (
+            {ended && canEdit && (
               <Link className="cf-btn cf-btn--secondary cf-btn--sm" to={`/profile/events/${eventId}`}>
                 <span className="cf-btn__icon">
                   <Pencil />

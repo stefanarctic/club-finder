@@ -5,7 +5,6 @@ import { HomeLayout } from './screens/home/HomeLayout'
 import { CountryMap } from './screens/map/CountryMap'
 import { EventEditor } from './screens/profile/EventEditor'
 import { ProfileScreen } from './screens/profile/ProfileScreen'
-import { VenueEditor } from './screens/profile/VenueEditor'
 import { TicketsScreen } from './screens/tickets/TicketsScreen'
 
 const Showcase = lazy(() => import('../showcase/Showcase').then((m) => ({ default: m.Showcase })))
@@ -21,8 +20,7 @@ export function App() {
         <Route path="map" element={<CountryMap />} />
         <Route path="tickets" element={<TicketsScreen />} />
         <Route path="profile" element={<ProfileScreen />} />
-        <Route path="profile/clubs/new" element={<VenueEditor />} />
-        <Route path="profile/clubs/:id" element={<VenueEditor />} />
+        <Route path="profile/clubs/*" element={<Navigate to="/profile" replace />} />
         <Route path="profile/events/new" element={<EventEditor />} />
         <Route path="profile/events/:id" element={<EventEditor />} />
       </Route>

@@ -1,4 +1,5 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
+import { getAuth, type Auth } from 'firebase/auth'
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, type Firestore } from 'firebase/firestore'
 
 const config = {
@@ -25,3 +26,4 @@ function openFirestore(app: FirebaseApp): Firestore {
 const app: FirebaseApp | null = firebaseConfigured ? initializeApp(config) : null
 
 export const db: Firestore | null = app ? openFirestore(app) : null
+export const auth: Auth | null = app ? getAuth(app) : null

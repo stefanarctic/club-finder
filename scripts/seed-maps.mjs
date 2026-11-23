@@ -247,26 +247,20 @@ const app = initializeApp({
 
 const db = initializeFirestore(app, { experimentalForceLongPolling: true })
 
-async function ensureVenue(base) {
-  const ref = doc(db, 'venues', base.id)
-  if ((await getDoc(ref)).exists()) {
-    console.log(`skip venue ${base.id}`)
-    return
-  }
-  let place = null
+async function placeFor(base) {
   if (!PLACES_KEY) {
     console.warn(`No VITE_GOOGLE_MAPS_API_KEY. ${base.id} is stored without Maps photos.`)
-  } else {
-    try {
-      place = base.placeId ? await placeById(base.placeId) : await placeByText(base.search)
-      if (!place) console.warn(`Maps had no match for ${base.id}. Stored the known address without photos.`)
-      else console.log(`Maps: ${place.name} · ${place.images.length} photos`)
-    } catch (error) {
-      console.warn(`Maps lookup failed for ${base.id}: ${error instanceof Error ? error.message : error}`)
-    }
+    return null
   }
-  await setDoc(ref, venueRecord(merge(base, place)))
-  console.log(`stored venue ${base.id}`)
+  try {
+    const place = base.placeId ? await placeById(base.placeId) : await placeByText(base.search)
+    if (!place) console.warn(`Maps had no match for ${base.id}. Stored the known address without photos.`)
+    else console.log(`Maps: ${place.name} · ${place.images.length} photos`)
+    return place
+  } catch (error) {
+    console.warn(`Maps lookup failed for ${base.id}: ${error instanceof Error ? error.message : error}`)
+    return null
+  }
 }
 
 async function ensureEvent(event) {
@@ -275,12 +269,18 @@ async function ensureEvent(event) {
     console.log(`skip event ${event.id}`)
     return
   }
-  await setDoc(ref, event)
+  const base = venues.find((venue) => venue.id === event.venueId)
+  if (!base) throw new Error(`No place details for ${event.id}`)
+  const merged = merge(base, await placeFor(base))
+  const { venueId, ...fields } = event
+  await setDoc(ref, {
+    ...fields,
+    venue: { ...venueRecord(merged), venueType: 'club' },
+  })
   console.log(`stored event ${event.id}`)
 }
 
 try {
-  for (const venue of venues) await ensureVenue(venue)
   for (const event of events) await ensureEvent(event)
 } catch (error) {
   console.error(error instanceof Error ? error.message : error)

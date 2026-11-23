@@ -1,12 +1,98 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Temporary, until accounts exist. Then require request.auth before write.
-    match /venues/{id} {
-      allow read, write: if true;
+    function signedIn() {
+      return request.auth != null;
     }
+
+    function userPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function role() {
+      return get(userPath()).data.role;
+    }
+
+    function isAdmin() {
+      return signedIn() && exists(userPath()) && role() == 'admin';
+    }
+
+    function isOrganizer() {
+      return signedIn() && exists(userPath()) && role() == 'organizer';
+    }
+
+    function canPublish() {
+      return isAdmin() || isOrganizer();
+    }
+
+    function profileKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'genres', 'budget']);
+    }
+
+    function validEventBody() {
+      let data = request.resource.data;
+      return data.name is string && data.name.size() > 0 && data.name.size() < 200
+        && data.startsAt is string
+        && data.durationHours is number && data.durationHours > 0 && data.durationHours <= 48
+        && data.averagePrice is number && data.averagePrice >= 0
+        && data.currency == 'EUR'
+        && data.image is string
+        && data.genres is list && data.genres.size() <= 7
+        && data.description is string && data.description.size() < 4000
+        && data.venue.name is string && data.venue.name.size() > 0
+        && data.venue.venueType in ['club', 'bar', 'concert_hall', 'arena', 'theatre', 'festival', 'other']
+        && data.venue.latitude is number && data.venue.longitude is number
+        && data.venue.latitude >= -90 && data.venue.latitude <= 90
+        && data.venue.longitude >= -180 && data.venue.longitude <= 180
+        && data.venue.priceLevel in [1, 2, 3, 4]
+        && data.venue.rating is number && data.venue.rating >= 0 && data.venue.rating <= 5;
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.role == 'user'
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.displayName.size() < 80
+        && request.resource.data.photoURL is string
+        && request.resource.data.genres is list
+        && request.resource.data.genres.size() <= 3
+        && (request.resource.data.budget == null || request.resource.data.budget in ['under50', '50to100', '100plus'])
+        && request.resource.data.keys().hasOnly(['displayName', 'email', 'photoURL', 'role', 'genres', 'budget']);
+      allow update: if signedIn() && (
+        (request.auth.uid == uid
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.email == resource.data.email
+          && profileKeys())
+        || (isAdmin()
+          && request.auth.uid != uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+          && request.resource.data.role in ['user', 'organizer'])
+      );
+      allow delete: if false;
+    }
+
     match /events/{id} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create: if canPublish()
+        && validEventBody()
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if validEventBody() && (
+        isAdmin()
+        || (isOrganizer()
+          && resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdBy == request.auth.uid)
+      );
+      allow delete: if isAdmin()
+        || (isOrganizer() && resource.data.createdBy == request.auth.uid);
+    }
+
+    match /venues/{id} {
+      allow read: if true;
+      allow write: if false;
     }
   }
 }

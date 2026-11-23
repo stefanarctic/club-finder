@@ -27,13 +27,13 @@ export function CountryMap() {
   const listings = useMemo(
     () =>
       buildListings({
-        venues: live.venues,
+        venues: [],
         events: live.events,
         origin: session.origin,
         preferences: { genres: [], budget: null },
         now,
       }),
-    [live.venues, live.events, session.origin, now],
+    [live.events, session.origin, now],
   )
   const pins = useMemo(
     () => buildPins(listings, new Set(listings.map((listing) => listing.event.id))),

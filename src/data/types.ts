@@ -6,6 +6,23 @@ export const MAX_GENRE_PICKS = 3
 export const BUDGETS = ['under50', '50to100', '100plus'] as const
 export type Budget = (typeof BUDGETS)[number]
 
+export const ROLES = ['user', 'organizer', 'admin'] as const
+export type Role = (typeof ROLES)[number]
+
+export const VENUE_TYPES = ['club', 'bar', 'concert_hall', 'arena', 'theatre', 'festival', 'other'] as const
+export type VenueType = (typeof VENUE_TYPES)[number]
+
+/** A saved account. `id` is the Firebase Auth uid. */
+export type Account = {
+  id: string
+  displayName: string
+  email: string
+  photoURL: string
+  role: Role
+  genres: Genre[]
+  budget: Budget | null
+}
+
 export type LatLng = { latitude: number; longitude: number }
 
 export type BoundingBox = { north: number; south: number; west: number; east: number }
@@ -26,12 +43,16 @@ export type Country = {
   boundingBox: BoundingBox
 }
 
-export type Venue = {
-  id: string
+/**
+ * Place details stored on an event. There is no venue document.
+ * The same hall on two nights is copied onto each event.
+ */
+export type EventPlace = {
   name: string
+  venueType: VenueType
   neighbourhood: string
   address: string
-  /** The city is whichever city bounds contain this point. It is not stored on the venue. */
+  /** The city is whichever city bounds contain this point. It is not stored. */
   latitude: number
   longitude: number
   /**
@@ -52,6 +73,16 @@ export type Venue = {
   website?: string
   mapsUrl?: string
   googlePlaceId?: string
+}
+
+/** A place as the map sees it. `id` is the Google place id, or the coordinates when there is none. */
+export type Venue = EventPlace & { id: string }
+
+/** Pin identity: one Google place, otherwise the same coordinates. */
+export function placeKey(place: Pick<EventPlace, 'googlePlaceId' | 'latitude' | 'longitude'>): string {
+  const id = place.googlePlaceId?.trim()
+  if (id) return id
+  return `${place.latitude.toFixed(5)},${place.longitude.toFixed(5)}`
 }
 
 /**
@@ -88,7 +119,6 @@ export type ClubEvent = {
 /** An event document. `startsAt` is an ISO 8601 instant and stays on that date. */
 export type StoredEvent = {
   id: string
-  venueId: string
   name: string
   startsAt: string
   durationHours: number
@@ -100,4 +130,7 @@ export type StoredEvent = {
   currency: 'EUR'
   genres: Genre[]
   description: string
+  /** Absent on events migrated before accounts. Only an admin can edit those. */
+  createdBy?: string
+  venue: EventPlace
 }

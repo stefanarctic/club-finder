@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "seed:maps": "node --env-file=.env scripts/seed-maps.mjs",
+    "migrate:events": "node --env-file=.env scripts/migrate-events.mjs",
     "icons": "pwa-assets-generator"
   },
   "dependencies": {

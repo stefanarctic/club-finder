@@ -1,7 +1,7 @@
-import { collection, deleteDoc, doc, getDocs, query, setDoc, where } from 'firebase/firestore'
-import { eventDocument, venueDocument } from './documents'
+import { deleteDoc, doc, setDoc } from 'firebase/firestore'
+import { eventDocument } from './documents'
 import { db } from './firebase'
-import type { StoredEvent, Venue } from './types'
+import type { StoredEvent } from './types'
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024
 const IMAGE_EXTENSION = /\.(jpe?g|png|webp|gif|heic|heif)$/i
@@ -15,17 +15,6 @@ function isImageFile(file: File): boolean {
   return file.type.startsWith('image/') || IMAGE_EXTENSION.test(file.name)
 }
 
-export async function saveVenue(venue: Venue): Promise<void> {
-  await setDoc(doc(requireDb(), 'venues', venue.id), venueDocument(venue))
-}
-
-export async function deleteVenue(id: string): Promise<void> {
-  const database = requireDb()
-  const nights = await getDocs(query(collection(database, 'events'), where('venueId', '==', id)))
-  await Promise.all(nights.docs.map((night) => deleteDoc(night.ref)))
-  await deleteDoc(doc(database, 'venues', id))
-}
-
 export async function saveEvent(event: StoredEvent): Promise<void> {
   await setDoc(doc(requireDb(), 'events', event.id), eventDocument(event))
 }
@@ -34,7 +23,7 @@ export async function deleteEvent(id: string): Promise<void> {
   await deleteDoc(doc(requireDb(), 'events', id))
 }
 
-export async function uploadImage(folder: 'venues' | 'events', ownerId: string, file: File): Promise<string> {
+export async function uploadImage(folder: 'events' | 'profiles', ownerId: string, file: File): Promise<string> {
   const cloud = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
   const preset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
   if (!cloud || !preset) {

@@ -5,6 +5,8 @@
  *
  *   node --env-file=.env scripts/set-club-photos.mjs
  */
+console.error('Retired. Place details live on each event, and there is no venues collection.')
+process.exit(1)
 import { initializeApp } from 'firebase/app'
 import { collection, doc, getDocs, initializeFirestore, setDoc } from 'firebase/firestore'
 

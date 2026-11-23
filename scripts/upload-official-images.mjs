@@ -5,6 +5,8 @@
  *   node --env-file=.env scripts/upload-official-images.mjs
  *   node --env-file=.env scripts/upload-official-images.mjs --dry-run
  */
+console.error('Retired. Events no longer store a venueId, so this script cannot match nights to a club page.')
+process.exit(1)
 import { initializeApp } from 'firebase/app'
 import { doc, getDocs, collection, initializeFirestore, setDoc } from 'firebase/firestore'
 

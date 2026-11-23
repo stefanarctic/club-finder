@@ -34,7 +34,6 @@ describe('resolveStart', () => {
 describe('scheduleStoredEvents', () => {
   const stored: StoredEvent = {
     id: 'e',
-    venueId: 'v',
     name: 'Night',
     startsAt: '2026-10-24T23:00:00+03:00',
     durationHours: 7,
@@ -43,6 +42,20 @@ describe('scheduleStoredEvents', () => {
     currency: 'EUR',
     genres: ['techno'],
     description: '',
+    venue: {
+      name: 'Hall',
+      venueType: 'arena',
+      neighbourhood: '',
+      address: '',
+      latitude: 46.77,
+      longitude: 23.56,
+      images: [],
+      rating: 0,
+      priceLevel: 2,
+      hours: '',
+      genres: [],
+      description: '',
+    },
   }
 
   it('keeps the saved instant instead of sliding it to today', () => {

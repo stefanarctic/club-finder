@@ -34,7 +34,7 @@ export function buildListings({ venues, events, origin, preferences, now }: Disc
   const venuesById = new Map(venues.map((v) => [v.id, v]))
   const listings: Listing[] = []
   for (const event of events) {
-    const venue = venuesById.get(event.venueId)
+    const venue = event.place ?? venuesById.get(event.venueId)
     if (!venue || !isUpcoming(event, now)) continue
     const km = distanceKm(origin, venue)
     const sameDay = isSameDay(event, now)

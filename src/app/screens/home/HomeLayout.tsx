@@ -17,6 +17,7 @@ import { boundsAroundPoints, cityContaining, isInsideCity, toLngLatBounds } from
 import type { TimeRange } from '../../../data/schedule'
 import { startLabel } from '../../format'
 import { EventMap } from '../../map/EventMap'
+import { canManage, useAccount } from '../../auth'
 import { useSession, type FallbackReason } from '../../session'
 import { useNow } from '../../useNow'
 import { EventPanel } from '../event/EventPanel'
@@ -49,6 +50,7 @@ const fallbackCopy: Record<FallbackReason, { tone: 'info' | 'warning'; title: st
 
 export function HomeLayout() {
   const session = useSession()
+  const { account } = useAccount()
   const navigate = useNavigate()
   const now = useNow()
   const activeEventId = useParams().id ?? null
@@ -78,13 +80,13 @@ export function HomeLayout() {
   const listings = useMemo(
     () =>
       buildListings({
-        venues: live.venues,
+        venues: [],
         events: live.events,
         origin,
         preferences: { genres, budget },
         now,
       }),
-    [live.venues, live.events, origin, genres, budget, now],
+    [live.events, origin, genres, budget, now],
   )
 
   const visible = useMemo(
@@ -236,12 +238,14 @@ export function HomeLayout() {
           <EmptyState
             title="No upcoming events"
             action={
-              <Link to="/profile/events/new" className="cf-btn cf-btn--secondary cf-btn--sm">
-                <span>Add an event</span>
-              </Link>
+              canManage(account) ? (
+                <Link to="/profile/events/new" className="cf-btn cf-btn--secondary cf-btn--sm">
+                  <span>Add an event</span>
+                </Link>
+              ) : undefined
             }
           >
-            A club shows on the map once it has a night that hasn’t ended.
+            An event stays on the map until it ends.
           </EmptyState>
         ) : visible.length === 0 ? (
           <EmptyState

@@ -1,4 +1,4 @@
-import { GENRES, type Genre, type StoredEvent, type Venue } from './types'
+import { GENRES, VENUE_TYPES, type EventPlace, type Genre, type StoredEvent, type VenueType } from './types'
 
 const GENRE_SET = new Set<string>(GENRES)
 
@@ -23,6 +23,10 @@ function priceLevel(value: unknown): 1 | 2 | 3 | 4 | null {
   return value === 1 || value === 2 || value === 3 || value === 4 ? value : null
 }
 
+function venueType(value: unknown): VenueType {
+  return VENUE_TYPES.find((item) => item === value) ?? 'club'
+}
+
 function strings(value: unknown): string[] {
   if (!Array.isArray(value)) return []
   return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0).map((item) => item.trim())
@@ -33,7 +37,7 @@ export function definedFields<T extends Record<string, unknown>>(value: T): T {
   return Object.fromEntries(Object.entries(value).filter(([, field]) => field !== undefined)) as T
 }
 
-export function parseVenue(id: string, data: unknown): Venue | null {
+export function parseEventPlace(data: unknown): EventPlace | null {
   if (!data || typeof data !== 'object') return null
   const raw = data as Record<string, unknown>
   const name = text(raw.name)
@@ -46,8 +50,8 @@ export function parseVenue(id: string, data: unknown): Venue | null {
     ? raw.imageAttributions.map((item) => (typeof item === 'string' ? item.trim() : ''))
     : []
   return {
-    id,
     name,
+    venueType: venueType(raw.venueType),
     neighbourhood: text(raw.neighbourhood),
     address: text(raw.address),
     latitude,
@@ -66,41 +70,38 @@ export function parseVenue(id: string, data: unknown): Venue | null {
   }
 }
 
-export function venueDocument(venue: Venue): Record<string, unknown> {
+export function placeDocument(place: EventPlace): Record<string, unknown> {
   return {
-    name: venue.name.trim(),
-    neighbourhood: venue.neighbourhood.trim(),
-    address: venue.address.trim(),
-    latitude: venue.latitude,
-    longitude: venue.longitude,
-    images: venue.images,
-    imageAttributions: venue.images.map((_, index) => venue.imageAttributions?.[index]?.trim() ?? ''),
-    rating: venue.rating,
-    priceLevel: venue.priceLevel,
-    hours: venue.hours.trim(),
-    genres: venue.genres,
-    description: venue.description.trim(),
-    phone: venue.phone?.trim() ?? '',
-    website: venue.website?.trim() ?? '',
-    mapsUrl: venue.mapsUrl?.trim() ?? '',
-    googlePlaceId: venue.googlePlaceId?.trim() ?? '',
+    name: place.name.trim(),
+    venueType: place.venueType,
+    neighbourhood: place.neighbourhood.trim(),
+    address: place.address.trim(),
+    latitude: place.latitude,
+    longitude: place.longitude,
+    images: place.images,
+    imageAttributions: place.images.map((_, index) => place.imageAttributions?.[index]?.trim() ?? ''),
+    rating: place.rating,
+    priceLevel: place.priceLevel,
+    hours: place.hours.trim(),
+    genres: place.genres,
+    description: place.description.trim(),
+    phone: place.phone?.trim() ?? '',
+    website: place.website?.trim() ?? '',
+    mapsUrl: place.mapsUrl?.trim() ?? '',
+    googlePlaceId: place.googlePlaceId?.trim() ?? '',
   }
 }
 
-export function parseStoredEvent(id: string, data: unknown): StoredEvent | null {
-  if (!data || typeof data !== 'object') return null
-  const raw = data as Record<string, unknown>
+function parseNightFields(id: string, raw: Record<string, unknown>) {
   const name = text(raw.name)
-  const venueId = text(raw.venueId)
   const startsAt = text(raw.startsAt)
   const durationHours = finite(raw.durationHours)
   const averagePrice = finite(raw.averagePrice)
-  if (!name || !venueId || !startsAt || Number.isNaN(new Date(startsAt).getTime())) return null
+  if (!name || !startsAt || Number.isNaN(new Date(startsAt).getTime())) return null
   if (durationHours == null || durationHours <= 0 || averagePrice == null || averagePrice < 0) return null
   if (raw.currency !== 'EUR') return null
   return {
     id,
-    venueId,
     name,
     startsAt,
     durationHours,
@@ -108,16 +109,36 @@ export function parseStoredEvent(id: string, data: unknown): StoredEvent | null 
     images: strings(raw.images),
     imageAttribution: optionalText(raw.imageAttribution),
     averagePrice,
-    currency: 'EUR',
+    currency: 'EUR' as const,
     genres: Array.isArray(raw.genres) ? raw.genres.filter(isGenre) : [],
     description: text(raw.description),
+    createdBy: optionalText(raw.createdBy),
   }
+}
+
+/** An event saved before the place lived on the document. The venue is joined at read time. */
+export type LinkedEvent = NonNullable<ReturnType<typeof parseNightFields>> & { venueId: string }
+
+export function parseStoredEvent(id: string, data: unknown): StoredEvent | LinkedEvent | null {
+  if (!data || typeof data !== 'object') return null
+  const raw = data as Record<string, unknown>
+  const fields = parseNightFields(id, raw)
+  if (!fields) return null
+  const venue = parseEventPlace(raw.venue)
+  if (venue) return { ...fields, venue }
+  const venueId = text(raw.venueId)
+  if (!venueId) return null
+  return { ...fields, venueId }
+}
+
+export function isLinkedEvent(event: StoredEvent | LinkedEvent): event is LinkedEvent {
+  return 'venueId' in event
 }
 
 export function eventDocument(event: StoredEvent): Record<string, unknown> {
   return definedFields({
-    venueId: event.venueId,
     name: event.name.trim(),
+    createdBy: event.createdBy,
     startsAt: event.startsAt,
     durationHours: event.durationHours,
     image: event.image.trim(),
@@ -127,5 +148,6 @@ export function eventDocument(event: StoredEvent): Record<string, unknown> {
     currency: 'EUR' as const,
     genres: event.genres,
     description: event.description.trim(),
+    venue: placeDocument(event.venue),
   })
 }

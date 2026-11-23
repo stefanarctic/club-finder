@@ -1,5 +1,5 @@
 import { addLocalDays, hasStarted, isSameLocalDay, startOfLocalDay, type ScheduledEvent } from '../data/schedule'
-import type { Budget } from '../data/types'
+import type { Budget, Role, VenueType } from '../data/types'
 
 // English interface, 24-hour clock, guest's own timezone.
 const time = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
@@ -31,6 +31,22 @@ export const budgetLabels: Record<Budget, string> = {
   under50: 'Under 50',
   '50to100': '50–100',
   '100plus': '100+',
+}
+
+export const venueTypeLabels: Record<VenueType, string> = {
+  club: 'Club',
+  bar: 'Bar',
+  concert_hall: 'Concert hall',
+  arena: 'Arena',
+  theatre: 'Theatre',
+  festival: 'Festival / outdoor',
+  other: 'Other',
+}
+
+export const roleLabels: Record<Role, string> = {
+  user: 'User',
+  organizer: 'Event manager',
+  admin: 'Admin',
 }
 
 export function externalMapUrl(latitude: number, longitude: number): string {

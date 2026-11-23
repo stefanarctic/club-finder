@@ -12,7 +12,7 @@ import './TicketsScreen.css'
 export function TicketsScreen() {
   const now = useNow()
   const live = useLiveCatalog()
-  const passes = useMemo(() => samplePasses(live.venues, live.events, now), [live.venues, live.events, now])
+  const passes = useMemo(() => samplePasses(live.events, now), [live.events, now])
 
   useEffect(() => {
     document.title = 'Club Finder · Tickets'
@@ -46,13 +46,11 @@ export function TicketsScreen() {
   )
 }
 
-function samplePasses(venueList: Venue[], events: ScheduledEvent[], now: Date): { event: ScheduledEvent; venue: Venue }[] {
-  const venues = new Map(venueList.map((venue) => [venue.id, venue]))
+function samplePasses(events: ScheduledEvent[], now: Date): { event: ScheduledEvent; venue: Venue }[] {
   const passes: { event: ScheduledEvent; venue: Venue }[] = []
   for (const event of events) {
-    const venue = venues.get(event.venueId)
-    if (!venue || !isUpcoming(event, now)) continue
-    passes.push({ event, venue })
+    if (!event.place || !isUpcoming(event, now)) continue
+    passes.push({ event, venue: event.place })
     if (passes.length === 2) break
   }
   return passes

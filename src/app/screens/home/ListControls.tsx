@@ -101,7 +101,7 @@ export function ListControls({
           </div>
           <div className="home-controls__group">
             <p className="home-controls__label">
-              Genres
+              Genres <span className="home-controls__hint">ranks closer matches higher</span>
               <span className="cf-mono home-controls__count">
                 {genres.length}/{MAX_GENRE_PICKS}
               </span>

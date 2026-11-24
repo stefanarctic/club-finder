@@ -8,13 +8,12 @@ import {
   buildListings,
   buildPins,
   groupListings,
-  matchesFilters,
   sortListings,
   type Listing,
   type SortKey,
 } from '../../../data/discovery'
 import { boundsAroundPoints, cityContaining, isInsideCity, toLngLatBounds } from '../../../data/geo'
-import type { TimeRange } from '../../../data/schedule'
+import { matchesTimeRange, type TimeRange } from '../../../data/schedule'
 import { startLabel } from '../../format'
 import { EventMap } from '../../map/EventMap'
 import { canManage, useAccount } from '../../auth'
@@ -90,11 +89,15 @@ export function HomeLayout() {
   )
 
   const visible = useMemo(
-    () => listings.filter((l) => matchesFilters(l, { timeRange, genres }, now)),
-    [listings, timeRange, genres, now],
+    () => listings.filter((l) => matchesTimeRange(l.event, timeRange, now)),
+    [listings, timeRange, now],
+  )
+  const matchedIds = useMemo(
+    () => new Set(visible.filter((l) => genres.length === 0 || l.matchedGenres.length > 0).map((l) => l.event.id)),
+    [visible, genres],
   )
 
-  const pins = useMemo(() => buildPins(listings, new Set(visible.map((l) => l.event.id))), [listings, visible])
+  const pins = useMemo(() => buildPins(listings, matchedIds), [listings, matchedIds])
   const mapPins = useMemo(() => (filterMapToo ? pins.filter((p) => p.matched) : pins), [pins, filterMapToo])
   const cityBounds = useMemo(() => {
     const points = pins.map((pin) => pin.venue).filter((venue) => isInsideCity(venue, selectedCity))
@@ -256,7 +259,7 @@ export function HomeLayout() {
               </Button>
             }
           >
-            No events fit this time range and these genres. The map hasn’t changed.
+            No events fit this time range. The map hasn’t changed.
           </EmptyState>
         ) : (
           <>

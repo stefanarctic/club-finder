@@ -54,10 +54,9 @@ export function buildListings({ venues, events, origin, preferences, now }: Disc
 
 export type ListFilters = { timeRange: TimeRange; genres: Genre[] }
 
-/** Genre chips narrow the list to events sharing at least one pick. No picks means no genre filter. */
+/** Time range narrows a list. Genre picks rank and highlight; they do not drop an event. */
 export function matchesFilters(listing: Listing, filters: ListFilters, now: Date): boolean {
-  if (!matchesTimeRange(listing.event, filters.timeRange, now)) return false
-  return filters.genres.length === 0 || listing.matchedGenres.length > 0
+  return matchesTimeRange(listing.event, filters.timeRange, now)
 }
 
 const byStart = (a: Listing, b: Listing) => a.event.startsAt.getTime() - b.event.startsAt.getTime()

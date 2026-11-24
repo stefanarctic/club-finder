@@ -277,10 +277,6 @@ export function HomeLayout() {
             )}
           </>
         )}
-
-        <footer className="home__footer">
-          <p>Ticketing is coming later.</p>
-        </footer>
       </section>
 
       {!session.location && <LocationPrompt />}

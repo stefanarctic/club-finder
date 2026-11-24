@@ -6,15 +6,18 @@ import { LiveCatalogProvider } from './data/LiveCatalog'
 import { App } from './app/App'
 import { AuthProvider } from './app/auth'
 import { SessionProvider } from './app/session'
+import { TicketsProvider } from './app/tickets'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <SessionProvider>
         <AuthProvider>
-          <LiveCatalogProvider>
-            <App />
-          </LiveCatalogProvider>
+          <TicketsProvider>
+            <LiveCatalogProvider>
+              <App />
+            </LiveCatalogProvider>
+          </TicketsProvider>
         </AuthProvider>
       </SessionProvider>
     </BrowserRouter>

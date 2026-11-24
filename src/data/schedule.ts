@@ -87,7 +87,7 @@ export function isUpcoming(event: ScheduledEvent, now: Date): boolean {
   return event.endsAt.getTime() > now.getTime()
 }
 
-export function hasStarted(event: ScheduledEvent, now: Date): boolean {
+export function hasStarted(event: { startsAt: Date }, now: Date): boolean {
   return event.startsAt.getTime() <= now.getTime()
 }
 

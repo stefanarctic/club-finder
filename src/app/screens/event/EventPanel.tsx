@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
-import { ArrowLeft, ChevronRight, Clock, ExternalLink, Globe, MapPin, Navigation, Pencil, Phone, Share2, Star, Ticket, Wallet } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Clock, ExternalLink, Globe, MapPin, Navigation, Pencil, Phone, Share2, Star, Wallet } from 'lucide-react'
 import {
   Button,
   Cover,
@@ -17,10 +17,13 @@ import { useLiveCatalog } from '../../../data/LiveCatalog'
 import type { Listing } from '../../../data/discovery'
 import { photoCredit, photoUrl } from '../../../data/photos'
 import { formatDistance } from '../../../data/ranking'
+import { REFUND_RULE, formatPrice } from '../../../data/tickets'
 import { canEditEvent, useAccount } from '../../auth'
 import { externalMapUrl, startLabel, timeSpanLabel } from '../../format'
 import { useSession } from '../../session'
+import { useTickets } from '../../tickets'
 import { PhotoViewer, type ViewerPhoto } from './PhotoViewer'
+import { TicketSheet } from './TicketSheet'
 import './EventPanel.css'
 
 type EventPanelProps = {
@@ -69,26 +72,29 @@ export function EventPanel({ eventId, listing, siblings, now, pending, known, on
   }, [fromList, navigate])
 
   return (
-    <article className="event-panel" ref={scrollRef} aria-labelledby="event-title">
+    <article className="event-panel" aria-labelledby="event-title">
       {listing ? (
         <EventDetail
           listing={listing}
           siblings={siblings}
           now={now}
           canEdit={editable}
+          scrollRef={scrollRef}
           onBack={back}
           onOpenEvent={onOpenEvent}
           headingRef={headingRef}
         />
       ) : (
-        <MissingEvent
-          eventId={eventId}
-          pending={pending}
-          ended={known}
-          canEdit={editable}
-          onBack={back}
-          headingRef={headingRef}
-        />
+        <div className="event-panel__scroll" ref={scrollRef}>
+          <MissingEvent
+            eventId={eventId}
+            pending={pending}
+            ended={known}
+            canEdit={editable}
+            onBack={back}
+            headingRef={headingRef}
+          />
+        </div>
       )}
     </article>
   )
@@ -101,6 +107,7 @@ function EventDetail({
   siblings,
   now,
   canEdit,
+  scrollRef,
   onBack,
   onOpenEvent,
   headingRef,
@@ -109,13 +116,25 @@ function EventDetail({
   siblings: Listing[]
   now: Date
   canEdit: boolean
+  scrollRef: RefObject<HTMLDivElement | null>
   onBack: () => void
   onOpenEvent: (eventId: string) => void
   headingRef: HeadingRef
 }) {
   const { event, venue } = listing
   const { userPosition } = useSession()
+  const { account } = useAccount()
+  const tickets = useTickets()
+  const buyRef = useRef<HTMLButtonElement>(null)
+  const returnFocus = useRef(false)
   const [shared, setShared] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const tiers = tickets.tiersFor({ id: event.id, averagePrice: event.averagePrice, currency: event.currency })
+  const held = tickets.passes.filter((pass) => pass.eventId === event.id)
+  const openTiers = tiers.filter((tier) => tier.remaining > 0)
+  const soldOut = openTiers.length === 0
+  const lowest = soldOut ? null : Math.min(...openTiers.map((tier) => tier.price))
+  const heldTo = held.length === 1 ? `/tickets/${held[0].id}` : '/tickets'
 
   const eventImages = [...new Set([event.image, ...(event.images ?? [])].map((src) => src.trim()).filter(Boolean))]
   const photos = [
@@ -143,7 +162,19 @@ function EventDetail({
     document.title = `${event.name} · ${venue.name} · Club Finder`
     setPhotoIndex(0)
     setViewerIndex(null)
+    setSheetOpen(false)
   }, [event.id, event.name, venue.name])
+
+  const closeSheet = () => {
+    returnFocus.current = true
+    setSheetOpen(false)
+  }
+
+  useEffect(() => {
+    if (sheetOpen || !returnFocus.current) return
+    returnFocus.current = false
+    buyRef.current?.focus()
+  }, [sheetOpen])
 
   const share = async () => {
     const url = window.location.href
@@ -162,6 +193,7 @@ function EventDetail({
 
   return (
     <>
+      <div className="event-panel__scroll" ref={scrollRef} inert={sheetOpen ? true : undefined}>
       <div className="event-panel__hero">
         <button
           type="button"
@@ -241,12 +273,20 @@ function EventDetail({
           </span>
         </p>
 
-        <div className="event-panel__price">
-          <span className="cf-label">Average ticket</span>
-          <span className="cf-display event-panel__price-value">
-            {event.averagePrice} {event.currency}
-          </span>
-        </div>
+        <section className="event-panel__section" aria-labelledby="event-tickets">
+          <h2 id="event-tickets" className="cf-label">Tickets</h2>
+          <ul className="event-panel__tiers">
+            {tiers.map((tier) => (
+              <li key={tier.id} className={cx('event-panel__tier', tier.remaining === 0 && 'is-out')}>
+                <span className="event-panel__tier-name">{tier.name}</span>
+                <span className="event-panel__tier-price cf-mono">{formatPrice(tier.price, tier.currency)}</span>
+                <span className="event-panel__tier-note">{tier.note}</span>
+                <span className="event-panel__tier-left">{tier.remaining === 0 ? 'Sold out' : `${tier.remaining} left`}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="event-panel__refund">{REFUND_RULE}</p>
+        </section>
 
         <div className="event-panel__facts">
           <InfoRow icon={<Navigation />} label="Distance">
@@ -335,10 +375,34 @@ function EventDetail({
             </span>
           </a>
         </div>
-        <p className="event-panel__ticket-note">
-          <Ticket aria-hidden /> Ticketing is coming later.
-        </p>
+        </div>
       </div>
+      <div className="event-panel__buy" inert={sheetOpen ? true : undefined}>
+        <div className="event-panel__buy-inner">
+          <div className="event-panel__buy-copy">
+            <p className="event-panel__buy-price cf-display">
+              {lowest === null ? 'Sold out' : lowest === 0 ? 'Free' : `From ${lowest} EUR`}
+            </p>
+            {held.length > 0 && (
+              <Link className="event-panel__buy-hold" to={heldTo}>
+                You hold {held.length} {held.length === 1 ? 'pass' : 'passes'}
+              </Link>
+            )}
+          </div>
+          <Button ref={buyRef} disabled={soldOut} onClick={() => setSheetOpen(true)}>
+            {soldOut ? 'Sold out' : 'Get tickets'}
+          </Button>
+        </div>
+      </div>
+      {sheetOpen && (
+        <TicketSheet
+          night={event}
+          venue={venue}
+          tiers={tiers}
+          initialBuyer={{ name: account?.displayName ?? '', email: account?.email ?? '' }}
+          onClose={closeSheet}
+        />
+      )}
     </>
   )
 }

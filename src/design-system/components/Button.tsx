@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { cx } from '../cx'
 import './Button.css'
 
@@ -10,19 +10,13 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   trailingIcon?: ReactNode
 }
 
-export function Button({
-  variant = 'primary',
-  size = 'md',
-  block,
-  leadingIcon,
-  trailingIcon,
-  className,
-  children,
-  type = 'button',
-  ...rest
-}: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant = 'primary', size = 'md', block, leadingIcon, trailingIcon, className, children, type = 'button', ...rest },
+  ref,
+) {
   return (
     <button
+      ref={ref}
       type={type}
       className={cx('cf-btn', `cf-btn--${variant}`, `cf-btn--${size}`, block && 'cf-btn--block', className)}
       {...rest}
@@ -32,7 +26,7 @@ export function Button({
       {trailingIcon && <span className="cf-btn__icon">{trailingIcon}</span>}
     </button>
   )
-}
+})
 
 type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   label: string

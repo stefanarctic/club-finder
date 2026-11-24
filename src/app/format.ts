@@ -22,7 +22,7 @@ export function startLabel(event: ScheduledEvent, now: Date): string {
 }
 
 /** Detail-page time span, e.g. "Tonight · 23:00 – 06:00". */
-export function timeSpanLabel(event: ScheduledEvent, now: Date): string {
+export function timeSpanLabel(event: { startsAt: Date; endsAt: Date }, now: Date): string {
   const day = hasStarted(event, now) ? 'On now' : dayLabel(event.startsAt, now)
   return `${day} · ${formatTime(event.startsAt)} – ${formatTime(event.endsAt)}`
 }

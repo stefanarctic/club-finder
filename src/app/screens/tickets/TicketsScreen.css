@@ -5,9 +5,37 @@
   list-style: none;
 }
 
+.tickets__switch {
+  width: 100%;
+}
+
+.tickets__switch .cf-segmented__option {
+  flex: 1;
+  text-align: center;
+}
+
+.tickets__link {
+  display: block;
+  border-radius: var(--cf-radius-lg);
+  color: inherit;
+  text-decoration: none;
+}
+
+.tickets__link:hover .pass {
+  border-color: var(--cf-border-strong);
+}
+
+.tickets__empty a.cf-btn,
+.screen a.cf-btn {
+  text-decoration: none;
+}
+
+/* ── Pass ───────────────────────────────────────────────────────────────── */
+
 .pass {
+  position: relative;
   display: grid;
-  overflow: hidden;
+  overflow: visible;
   border-radius: var(--cf-radius-lg);
   background: var(--cf-bg-raised);
   border: 1px solid var(--cf-border-default);
@@ -15,68 +43,243 @@
   animation: cf-rise var(--cf-duration-base) var(--cf-ease-out);
 }
 
-.pass__top {
-  display: flex;
-  gap: var(--cf-space-3);
-  padding: var(--cf-space-4);
+.pass.is-tonight {
+  border-color: transparent;
+  box-shadow: var(--cf-tonight-glow-soft);
+}
+
+.pass.is-past {
+  opacity: 0.72;
+}
+
+.pass__hero {
+  position: relative;
+  height: 156px;
+  overflow: hidden;
+  border-radius: calc(var(--cf-radius-lg) - 1px) calc(var(--cf-radius-lg) - 1px) 0 0;
+}
+
+.pass--full .pass__hero {
+  height: 220px;
 }
 
 .pass__cover {
-  width: 76px;
-  height: 76px;
-  flex: none;
-  border-radius: var(--cf-radius-sm);
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.pass__facts {
+.pass__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(5 4 7 / 0.05) 15%, rgb(5 4 7 / 0.88) 100%);
+}
+
+.pass__copy {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: grid;
-  align-content: start;
-  gap: 4px;
-  min-width: 0;
+  gap: 6px;
+  padding: var(--cf-space-4);
+}
+
+.pass__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-space-2);
 }
 
 .pass__name {
-  font-size: var(--cf-text-lg);
+  font-size: var(--cf-text-2xl);
+  text-wrap: balance;
 }
 
-.pass__venue,
-.pass__time {
+.pass--full .pass__name {
+  font-size: var(--cf-text-3xl);
+}
+
+.pass__meta {
   font-size: var(--cf-text-sm);
-  color: var(--cf-text-secondary);
+  color: var(--cf-mist-300);
 }
 
-.pass__time {
-  color: var(--cf-text-accent);
+.pass__perf {
+  position: relative;
+  z-index: 1;
+  height: 0;
+}
+
+.pass__perf::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: 20px;
+  left: 20px;
+  height: 1px;
+  background-image: linear-gradient(to right, var(--cf-border-strong) 50%, transparent 50%);
+  background-size: 8px 1px;
+}
+
+.pass__notch {
+  position: absolute;
+  top: -11px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--cf-bg-app);
+}
+
+.pass__notch--left {
+  left: -11px;
+}
+
+.pass__notch--right {
+  right: -11px;
 }
 
 .pass__stub {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--cf-space-4);
   padding: var(--cf-space-4);
-  border-top: 1px dashed var(--cf-border-strong);
-  background: var(--cf-bg-surface);
+  background:
+    linear-gradient(180deg, transparent, rgb(132 69 255 / 0.05)),
+    var(--cf-bg-surface);
+  border-radius: 0 0 calc(var(--cf-radius-lg) - 1px) calc(var(--cf-radius-lg) - 1px);
+}
+
+.pass.is-used .pass__stub {
+  padding-right: 108px;
+}
+
+.pass__seal {
+  display: grid;
+  place-items: center;
+  flex: none;
+  padding: 8px;
+  border-radius: var(--cf-radius-sm);
+  border: 1px solid var(--cf-border-default);
+  background: var(--cf-bg-app);
+}
+
+.pass.is-used .pass__seal {
+  opacity: 0.45;
 }
 
 .pass__mark {
   display: grid;
-  grid-template-columns: repeat(6, 7px);
-  gap: 3px;
-  flex: none;
+  grid-template-columns: repeat(5, 7px);
+  gap: 4px;
+}
+
+.pass--full .pass__mark {
+  grid-template-columns: repeat(5, 9px);
+  gap: 5px;
 }
 
 .pass__mark span {
   width: 7px;
   height: 7px;
-  border-radius: 1px;
+  border-radius: 50%;
   background: var(--cf-ink-5);
 }
 
-.pass__mark span.is-on {
-  background: var(--cf-mist-100);
+.pass--full .pass__mark span {
+  width: 9px;
+  height: 9px;
 }
 
-.pass__disclaimer {
+.pass__mark span.is-on {
+  background: var(--cf-uv-200);
+}
+
+.pass__admit {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pass__code {
+  font-size: var(--cf-text-lg);
+  letter-spacing: 0.08em;
+  color: var(--cf-text-primary);
+}
+
+.pass--full .pass__code {
+  font-size: var(--cf-text-xl);
+}
+
+.pass__stamp {
+  position: absolute;
+  top: 50%;
+  right: var(--cf-space-4);
+  margin: 0;
+  padding: 2px 10px;
+  border: 2px solid var(--cf-danger);
+  border-radius: 4px;
+  color: var(--cf-danger);
+  font-family: var(--cf-font-display);
+  font-stretch: var(--cf-display-stretch);
+  font-weight: 760;
+  font-size: var(--cf-text-lg);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: translateY(-50%) rotate(-14deg);
+  pointer-events: none;
+}
+
+.pass--full .pass__stamp {
+  font-size: var(--cf-text-2xl);
+}
+
+/* ── Pass page ──────────────────────────────────────────────────────────── */
+
+.pass-screen__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cf-space-2);
+  justify-self: start;
+  color: var(--cf-text-secondary);
+  font-size: var(--cf-text-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pass-screen__back svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pass-screen__facts {
+  display: grid;
+  gap: var(--cf-space-3);
+  margin: 0;
+}
+
+.pass-screen__fact {
+  display: grid;
+  gap: 2px;
+}
+
+.pass-screen__fact dd {
+  margin: 0;
+}
+
+.pass-screen__hint {
+  color: var(--cf-text-tertiary);
+  font-size: var(--cf-text-xs);
+}
+
+.pass-screen__use {
+  display: grid;
+  gap: var(--cf-space-2);
+}
+
+.pass-screen__use p {
   font-size: var(--cf-text-xs);
   color: var(--cf-text-tertiary);
 }

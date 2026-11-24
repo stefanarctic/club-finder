@@ -1,81 +1,71 @@
-import { useEffect, useMemo } from 'react'
-import { Cover, Tag } from '../../../design-system'
-import { useLiveCatalog } from '../../../data/LiveCatalog'
-import { photoUrl } from '../../../data/photos'
-import { isUpcoming, type ScheduledEvent } from '../../../data/schedule'
-import type { Venue } from '../../../data/types'
-import { startLabel } from '../../format'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
+import { EmptyState, SegmentedControl } from '../../../design-system'
+import { passPile, type Pass, type PassPile } from '../../../data/tickets'
 import { ScreenFrame } from '../../shell/ScreenFrame'
+import { useTickets } from '../../tickets'
 import { useNow } from '../../useNow'
-import './TicketsScreen.css'
+import { PassCard } from './PassCard'
+
+const piles: { value: PassPile; label: string }[] = [
+  { value: 'upcoming', label: 'Upcoming' },
+  { value: 'used', label: 'Used' },
+  { value: 'past', label: 'Past' },
+]
+
+const emptyCopy: Record<PassPile, { title: string; body: string }> = {
+  upcoming: { title: 'No passes yet', body: 'When you get tickets, they show up here.' },
+  used: { title: 'No used passes', body: 'A pass moves here once you mark it used.' },
+  past: { title: 'No past nights', body: 'Passes stay here after the night ends.' },
+}
 
 export function TicketsScreen() {
   const now = useNow()
-  const live = useLiveCatalog()
-  const passes = useMemo(() => samplePasses(live.events, now), [live.events, now])
+  const { passes } = useTickets()
+  const [pile, setPile] = useState<PassPile>('upcoming')
 
   useEffect(() => {
     document.title = 'Club Finder · Tickets'
   }, [])
 
+  const visible = passes
+    .filter((pass) => passPile(pass, now) === pile)
+    .sort((a, b) => (pile === 'past' ? startTime(b) - startTime(a) : startTime(a) - startTime(b)))
+  const empty = emptyCopy[pile]
+
   return (
     <ScreenFrame title="Tickets">
-      <ul className="tickets">
-        {passes.map(({ event, venue }) => (
-          <li key={event.id}>
-            <article className="pass">
-              <div className="pass__top">
-                <Cover seed={event.id} src={photoUrl(event.image, 'card')} alt="" className="pass__cover" />
-                <div className="pass__facts">
-                  <Tag tone="accent">Sample</Tag>
-                  <h2 className="pass__name cf-heading">{event.name}</h2>
-                  <p className="pass__venue">{venue.name}</p>
-                  <p className="cf-mono pass__time">{startLabel(event, now)}</p>
-                </div>
-              </div>
-              <div className="pass__stub">
-                <SampleMark seed={event.id} />
-                <p className="pass__disclaimer">Sample — not a real ticket</p>
-              </div>
-            </article>
-          </li>
-        ))}
-      </ul>
-      <p className="screen__note">Tickets will show up here once ticketing opens.</p>
+      <SegmentedControl className="tickets__switch" label="Passes" size="sm" options={piles} value={pile} onChange={setPile} />
+      {visible.length === 0 ? (
+        <div className="tickets__empty">
+          <EmptyState
+            title={empty.title}
+            action={
+              pile === 'upcoming' ? (
+                <Link className="cf-btn cf-btn--primary cf-btn--md" to="/">
+                  Find a night
+                </Link>
+              ) : undefined
+            }
+          >
+            {empty.body}
+          </EmptyState>
+        </div>
+      ) : (
+        <ul className="tickets">
+          {visible.map((pass) => (
+            <li key={pass.id}>
+              <Link className="tickets__link" to={`/tickets/${pass.id}`}>
+                <PassCard pass={pass} now={now} />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </ScreenFrame>
   )
 }
 
-function samplePasses(events: ScheduledEvent[], now: Date): { event: ScheduledEvent; venue: Venue }[] {
-  const passes: { event: ScheduledEvent; venue: Venue }[] = []
-  for (const event of events) {
-    if (!event.place || !isUpcoming(event, now)) continue
-    passes.push({ event, venue: event.place })
-    if (passes.length === 2) break
-  }
-  return passes
-}
-
-/** A loose mosaic. It is not a QR code and nothing here is scannable. */
-function SampleMark({ seed }: { seed: string }) {
-  const on = cells(seed)
-  return (
-    <div className="pass__mark" aria-hidden>
-      {on.map((filled, index) => (
-        <span key={index} className={filled ? 'is-on' : undefined} />
-      ))}
-    </div>
-  )
-}
-
-function cells(seed: string): boolean[] {
-  let hash = 2166136261
-  for (let i = 0; i < seed.length; i++) {
-    hash ^= seed.charCodeAt(i)
-    hash = Math.imul(hash, 16777619)
-  }
-  return Array.from({ length: 36 }, (_, index) => {
-    hash = Math.imul(hash ^ (index + 1), 16777619)
-    return (hash >>> 0) % 3 !== 0
-  })
+function startTime(pass: Pass): number {
+  return new Date(pass.startsAt).getTime()
 }

@@ -2,7 +2,6 @@ import { useState, type ReactNode } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
-  Clock,
   Crosshair,
   ExternalLink,
   LocateFixed,
@@ -34,6 +33,7 @@ import {
   UserDot,
   VenuePin,
 } from '../design-system'
+import { OpeningHours } from '../app/screens/event/OpeningHours'
 import { FakeMap, Marker } from './FakeMap'
 import { genres, tonightEvents, upcomingEvents } from './sampleData'
 import './Showcase.css'
@@ -677,9 +677,10 @@ function EventScreen() {
           <InfoRow icon={<MapPin />} label="Address">
             Str. Constantin Mille 4, Bucharest
           </InfoRow>
-          <InfoRow icon={<Clock />} label="Hours">
-            Thu–Sat 22:00–07:00
-          </InfoRow>
+          <OpeningHours
+            hours="Monday: 12:00 PM – 3:00 AM · Tuesday: 12:00 PM – 5:00 AM · Wednesday: 12:00 PM – 3:00 AM · Thursday: 12:00 PM – 5:00 AM · Friday: 12:00 PM – 6:00 AM · Saturday: 12:00 PM – 6:00 AM · Sunday: 12:00 PM – 3:00 AM"
+            now={new Date()}
+          />
           <InfoRow icon={<Star />} label="Rating">
             <Rating value={4.3} />
           </InfoRow>

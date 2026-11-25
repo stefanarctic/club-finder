@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
-import { ArrowLeft, ChevronRight, Clock, ExternalLink, Globe, MapPin, Navigation, Pencil, Phone, Share2, Star, Wallet } from 'lucide-react'
+import { ArrowLeft, ChevronRight, ExternalLink, Globe, MapPin, Navigation, Pencil, Phone, Share2, Star, Wallet } from 'lucide-react'
 import {
   Button,
   Cover,
@@ -22,6 +22,7 @@ import { canEditEvent, useAccount } from '../../auth'
 import { externalMapUrl, startLabel, timeSpanLabel } from '../../format'
 import { useSession } from '../../session'
 import { useTickets } from '../../tickets'
+import { OpeningHours } from './OpeningHours'
 import { PhotoViewer, type ViewerPhoto } from './PhotoViewer'
 import { TicketSheet } from './TicketSheet'
 import './EventPanel.css'
@@ -296,9 +297,7 @@ function EventDetail({
           <InfoRow icon={<MapPin />} label="Address">
             {venue.address}
           </InfoRow>
-          <InfoRow icon={<Clock />} label="Hours">
-            <span className="event-panel__hours">{venue.hours}</span>
-          </InfoRow>
+          <OpeningHours hours={venue.hours} now={now} />
           <InfoRow icon={<Star />} label="Rating">
             {venue.rating > 0 ? (
               <>

@@ -1,0 +1,129 @@
+/* Icon, label and the open/closed line share one row and center on it.
+   Day blocks sit on the next row, across the full width of the facts card. */
+
+.cf-info-row.opening-hours-row {
+  grid-template-columns: 20px 92px minmax(0, 1fr);
+  grid-template-areas:
+    'icon label summary'
+    'schedule schedule schedule';
+  align-items: center;
+  column-gap: var(--cf-space-3);
+  row-gap: var(--cf-space-3);
+}
+
+.opening-hours-row .cf-info-row__icon {
+  grid-area: icon;
+  align-self: center;
+}
+
+.opening-hours-row .cf-info-row__label {
+  grid-area: label;
+  align-self: center;
+}
+
+.opening-hours {
+  display: contents;
+}
+
+.opening-hours__summary {
+  grid-area: summary;
+  align-self: center;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.4em;
+  row-gap: 1px;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--cf-text-sm);
+  line-height: 1.35;
+  color: var(--cf-text-primary);
+}
+
+.opening-hours__state {
+  font-weight: 650;
+}
+
+.opening-hours__state.is-open {
+  color: var(--cf-live);
+}
+
+.opening-hours__state.is-closed {
+  color: var(--cf-danger);
+}
+
+.opening-hours__sep {
+  color: var(--cf-text-tertiary);
+}
+
+.opening-hours__detail {
+  color: var(--cf-text-secondary);
+  white-space: nowrap;
+}
+
+.opening-hours__plain {
+  min-width: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.opening-hours__plain.is-empty {
+  color: var(--cf-text-tertiary);
+}
+
+.opening-hours__days {
+  grid-area: schedule;
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.opening-hours__day {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px var(--cf-space-3);
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-bg-raised);
+  border: 1px solid var(--cf-border-subtle);
+}
+
+.opening-hours__day.is-today {
+  background: var(--cf-bg-accent-soft);
+  border-color: var(--cf-border-accent);
+}
+
+.opening-hours__name {
+  font-size: var(--cf-text-sm);
+  font-weight: 600;
+}
+
+.opening-hours__day.is-today .opening-hours__name {
+  color: var(--cf-uv-100);
+}
+
+.opening-hours__time {
+  margin-left: auto;
+  font-size: var(--cf-text-xs);
+  color: var(--cf-text-secondary);
+  text-align: right;
+}
+
+.opening-hours__day.is-today .opening-hours__time {
+  color: var(--cf-text-primary);
+}
+
+.opening-hours__day.is-closed .opening-hours__time {
+  color: var(--cf-text-tertiary);
+}
+
+@media (max-width: 420px) {
+  .cf-info-row.opening-hours-row {
+    grid-template-columns: 18px 80px minmax(0, 1fr);
+  }
+}

@@ -127,10 +127,6 @@
   color: var(--cf-text-tertiary);
 }
 
-.event-panel__hours {
-  white-space: pre-line;
-}
-
 .event-panel__body {
   display: grid;
   gap: var(--cf-space-4);

@@ -86,12 +86,52 @@ service cloud.firestore {
           && resource.data.createdBy == request.auth.uid
           && request.resource.data.createdBy == request.auth.uid)
       );
-      allow delete: if isAdmin()
-        || (isOrganizer() && resource.data.createdBy == request.auth.uid);
+      allow delete: if !exists(/databases/$(database)/documents/ticketStock/$(id)) && (
+        isAdmin()
+        || (isOrganizer() && resource.data.createdBy == request.auth.uid)
+      );
+
+      function ownsEvent() {
+        return isAdmin()
+          || (isOrganizer() && get(/databases/$(database)/documents/events/$(id)).data.createdBy == request.auth.uid);
+      }
+
+      // Door staff. Written by the setDoorStaff function only.
+      match /staff/{staffUid} {
+        allow read: if signedIn() && (request.auth.uid == staffUid || ownsEvent());
+        allow write: if false;
+      }
+
+      // Every scan attempt. Written by the redeemTicket function only.
+      match /scans/{scanId} {
+        allow read: if signedIn() && ownsEvent();
+        allow write: if false;
+      }
     }
 
     match /venues/{id} {
       allow read: if true;
+      allow write: if false;
+    }
+
+    // Tickets, orders, stock, and holder counts are written only by Cloud Functions.
+    match /tickets/{ticketId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /orders/{orderId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /ticketStock/{eventId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /ticketHolders/{holderId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
       allow write: if false;
     }
   }

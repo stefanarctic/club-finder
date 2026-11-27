@@ -15,18 +15,37 @@ const piles: { value: PassPile; label: string }[] = [
 
 const emptyCopy: Record<PassPile, { title: string; body: string }> = {
   upcoming: { title: 'No passes yet', body: 'When you get tickets, they show up here.' },
-  used: { title: 'No used passes', body: 'A pass moves here once you mark it used.' },
+  used: { title: 'No used passes', body: 'A pass moves here once it’s scanned at the door.' },
   past: { title: 'No past nights', body: 'Passes stay here after the night ends.' },
 }
 
 export function TicketsScreen() {
   const now = useNow()
-  const { passes } = useTickets()
+  const { signedIn, passes } = useTickets()
   const [pile, setPile] = useState<PassPile>('upcoming')
 
   useEffect(() => {
     document.title = 'Club Finder · Tickets'
   }, [])
+
+  if (!signedIn) {
+    return (
+      <ScreenFrame title="Tickets">
+        <div className="tickets__empty">
+          <EmptyState
+            title="Sign in to see your passes"
+            action={
+              <Link className="cf-btn cf-btn--primary cf-btn--md" to="/profile">
+                Sign in
+              </Link>
+            }
+          >
+            Passes are kept on your account, so they follow you to any device.
+          </EmptyState>
+        </div>
+      </ScreenFrame>
+    )
+  }
 
   const visible = passes
     .filter((pass) => passPile(pass, now) === pile)

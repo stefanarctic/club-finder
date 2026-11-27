@@ -49,7 +49,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 1100,
     rollupOptions: {
       output: {
-        manualChunks: { maplibre: ['maplibre-gl'] },
+        manualChunks: {
+          maplibre: ['maplibre-gl'],
+          firebase: ['firebase/app', 'firebase/app-check', 'firebase/auth', 'firebase/firestore', 'firebase/functions'],
+        },
       },
     },
   },

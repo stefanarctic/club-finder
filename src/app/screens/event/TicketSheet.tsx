@@ -3,16 +3,8 @@ import { Link } from 'react-router'
 import { ArrowLeft, Minus, Plus, X } from 'lucide-react'
 import { Button, IconButton, cx } from '../../../design-system'
 import type { ScheduledEvent } from '../../../data/schedule'
-import {
-  MAX_PASSES_PER_ORDER,
-  REFUND_RULE,
-  buyerError,
-  formatPrice,
-  orderQuote,
-  type AvailableTier,
-  type Pass,
-} from '../../../data/tickets'
-import type { Venue } from '../../../data/types'
+import { MAX_PASSES_PER_ORDER, REFUND_RULE, formatPrice, orderQuote, passRef, type AvailableTier } from '../../../data/tickets'
+import { useAccount } from '../../auth'
 import { useTickets } from '../../tickets'
 import { useNow } from '../../useNow'
 import { PassCard } from '../tickets/PassCard'
@@ -28,34 +20,30 @@ const stepLabel: Record<Step, string> = {
 
 export function TicketSheet({
   night,
-  venue,
   tiers,
-  initialBuyer,
   onClose,
 }: {
   night: ScheduledEvent
-  venue: Venue
   tiers: AvailableTier[]
-  initialBuyer: { name: string; email: string }
   onClose: () => void
 }) {
   const now = useNow()
-  const { purchase } = useTickets()
+  const { user, account } = useAccount()
+  const { purchase, passes } = useTickets()
   const dialogRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
   const [step, setStep] = useState<Step>('choose')
   const [quantities, setQuantities] = useState<Record<string, number>>({})
-  const [name, setName] = useState(initialBuyer.name)
-  const [email, setEmail] = useState(initialBuyer.email)
   const [error, setError] = useState<string | null>(null)
-  const [issued, setIssued] = useState<Pass[]>([])
+  const [busy, setBusy] = useState(false)
+  /** One id per checkout. A double tap or a retry after a dropped connection lands on the same order. */
+  const [requestId, setRequestId] = useState('')
+  const [issuedIds, setIssuedIds] = useState<string[]>([])
 
   const quote = orderQuote(tiers, quantities)
-
-  useEffect(() => {
-    setName((current) => current || initialBuyer.name)
-    setEmail((current) => current || initialBuyer.email)
-  }, [initialBuyer.name, initialBuyer.email])
+  const issued = issuedIds.flatMap((id) => passes.filter((pass) => pass.id === id))
+  const buyerName = account?.displayName ?? user?.displayName ?? ''
+  const buyerEmail = account?.email ?? user?.email ?? ''
 
   useEffect(() => {
     titleRef.current?.focus()
@@ -66,6 +54,7 @@ export function TicketSheet({
       if (event.key === 'Escape') {
         event.preventDefault()
         event.stopImmediatePropagation()
+        if (busy) return
         if (step === 'checkout') setStep('choose')
         else onClose()
         return
@@ -87,48 +76,40 @@ export function TicketSheet({
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
-  }, [step, onClose])
+  }, [step, busy, onClose])
 
   const setQty = (id: string, next: number) => {
     setError(null)
     setQuantities((current) => ({ ...current, [id]: Math.max(0, next) }))
   }
 
-  const submit = (formEvent: FormEvent) => {
+  const toCheckout = () => {
+    setError(null)
+    setRequestId(crypto.randomUUID())
+    setStep('checkout')
+  }
+
+  const submit = async (formEvent: FormEvent) => {
     formEvent.preventDefault()
-    const problem = buyerError(name, email)
-    if (problem) {
-      setError(problem)
-      return
-    }
-    const result = purchase({
-      event: {
-        id: night.id,
-        name: night.name,
-        image: night.image,
-        currency: night.currency,
-        averagePrice: night.averagePrice,
-        startsAt: night.startsAt.toISOString(),
-        endsAt: night.endsAt.toISOString(),
-        venueName: venue.name,
-        address: venue.address,
-        latitude: venue.latitude,
-        longitude: venue.longitude,
-      },
+    if (busy || !user) return
+    setBusy(true)
+    setError(null)
+    const result = await purchase({
+      eventId: night.id,
+      requestId,
       lines: quote.lines.map((line) => ({ tierId: line.tier.id, quantity: line.quantity })),
-      buyerName: name,
-      buyerEmail: email,
     })
+    setBusy(false)
     if (!result.ok) {
       setError(result.error)
       return
     }
-    setIssued(result.passes)
-    setError(null)
+    setIssuedIds(result.ticketIds)
     setStep('done')
   }
 
   const closeOrBack = () => {
+    if (busy) return
     if (step === 'checkout') {
       setError(null)
       setStep('choose')
@@ -233,20 +214,26 @@ export function TicketSheet({
               <p className="ticket-sheet__total cf-display">{formatPrice(quote.total)}</p>
             </div>
           </div>
-          <label className="ticket-sheet__field">
-            <span className="cf-label">Name</span>
-            <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" />
-          </label>
-          <label className="ticket-sheet__field">
-            <span className="cf-label">Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
-              inputMode="email"
-            />
-          </label>
+          {user ? (
+            <>
+              <div className="ticket-sheet__field">
+                <span className="cf-label">Name at the door</span>
+                <p>{buyerName || buyerEmail}</p>
+              </div>
+              <div className="ticket-sheet__field">
+                <span className="cf-label">Account</span>
+                <p>{buyerEmail}</p>
+              </div>
+            </>
+          ) : (
+            <div className="ticket-sheet__field">
+              <span className="cf-label">Account</span>
+              <p>Passes are tied to your account, so only you can show them. Sign in to continue.</p>
+              <Link className="cf-btn cf-btn--secondary cf-btn--md cf-btn--block" to="/profile">
+                Sign in
+              </Link>
+            </div>
+          )}
           {error && (
             <p className="ticket-sheet__error" role="alert">
               {error}
@@ -256,23 +243,24 @@ export function TicketSheet({
         </form>
       )}
 
-      {step === 'done' && issued[0] && (
+      {step === 'done' && (
         <div className="ticket-sheet__body">
           <div className="ticket-sheet__done">
             <h2 id="ticket-sheet-title" ref={titleRef} tabIndex={-1} className="ticket-sheet__done-title cf-display">
               You're in
             </h2>
             <p>
-              {issued.length === 1 ? 'One pass' : `${issued.length} passes`} for {night.name}.
+              {issuedIds.length === 1 ? 'One pass' : `${issuedIds.length} passes`} for {night.name}. Open a pass at the door to
+              show its code.
             </p>
           </div>
-          <PassCard pass={issued[0]} now={now} />
+          {issued[0] ? <PassCard pass={issued[0]} now={now} /> : <p className="ticket-sheet__rule">Loading your passes…</p>}
           {issued.length > 1 && (
             <ul className="ticket-sheet__codes">
               {issued.map((pass) => (
                 <li key={pass.id}>
                   <span>{pass.tierName}</span>
-                  <span className="cf-mono">{pass.code}</span>
+                  <span className="cf-mono">{passRef(pass.id)}</span>
                 </li>
               ))}
             </ul>
@@ -290,17 +278,17 @@ export function TicketSheet({
                 {quote.fee > 0 && <p className="ticket-sheet__incl">Includes {quote.fee} EUR service fee</p>}
                 {quote.count >= MAX_PASSES_PER_ORDER && <p className="ticket-sheet__incl">8 passes is the limit for one order.</p>}
               </div>
-              <Button disabled={quote.count === 0} onClick={() => setStep('checkout')}>
+              <Button disabled={quote.count === 0} onClick={toCheckout}>
                 Continue
               </Button>
             </>
           )}
           {step === 'checkout' && (
             <>
-              <Button type="submit" form="ticket-checkout" block>
-                {quote.total === 0 ? 'Get passes' : `Get passes · ${quote.total} EUR`}
+              <Button type="submit" form="ticket-checkout" block disabled={!user || busy}>
+                {busy ? 'Issuing passes…' : quote.total === 0 ? 'Get passes' : `Get passes · ${quote.total} EUR`}
               </Button>
-              <p className="ticket-sheet__honest">Saved on this device. No payment is taken.</p>
+              <p className="ticket-sheet__honest">Saved to your account. No payment is taken yet.</p>
             </>
           )}
           {step === 'done' && (

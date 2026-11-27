@@ -1,15 +1,16 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
 import { Button, EmptyState } from '../../../design-system'
-import { REFUND_RULE, formatPrice } from '../../../data/tickets'
+import { REFUND_RULE, formatPrice, passRef } from '../../../data/tickets'
+import { useAccount } from '../../auth'
 import { externalMapUrl } from '../../format'
 import { ScreenFrame } from '../../shell/ScreenFrame'
 import { useTickets } from '../../tickets'
 import { useNow } from '../../useNow'
 import { PassCard } from './PassCard'
 
-const purchasedAt = new Intl.DateTimeFormat('en-GB', {
+const stamp = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric',
   month: 'short',
   hour: '2-digit',
@@ -20,12 +21,18 @@ const purchasedAt = new Intl.DateTimeFormat('en-GB', {
 export function PassScreen() {
   const { id } = useParams()
   const now = useNow()
-  const { passes, markUsed } = useTickets()
+  const { ready } = useAccount()
+  const { signedIn, passes, resetKey } = useTickets()
   const pass = passes.find((item) => item.id === id)
+  const live = pass !== undefined && pass.status === 'valid' && new Date(pass.endsAt).getTime() > now.getTime()
+  const [resetting, setResetting] = useState(false)
+  const [resetNote, setResetNote] = useState<string | null>(null)
 
   useEffect(() => {
     document.title = pass ? `${pass.eventName} · Ticket · Club Finder` : 'Ticket · Club Finder'
   }, [pass])
+
+  useWakeLock(live)
 
   if (!pass) {
     return (
@@ -36,17 +43,26 @@ export function PassScreen() {
         </Link>
         <h1 className="cf-visually-hidden">Pass not found</h1>
         <EmptyState
-          title="That pass isn’t on this device"
+          title={!ready ? 'Opening your pass' : signedIn ? 'That pass isn’t on this account' : 'Sign in to see your passes'}
           action={
-            <Link className="cf-btn cf-btn--secondary cf-btn--sm" to="/tickets">
-              Back to tickets
+            <Link className="cf-btn cf-btn--secondary cf-btn--sm" to={signedIn ? '/tickets' : '/profile'}>
+              {signedIn ? 'Back to tickets' : 'Sign in'}
             </Link>
           }
         >
-          It may have been saved in another browser.
+          {signedIn ? 'It may belong to a different account.' : 'Passes live on your account, so they follow you to any device.'}
         </EmptyState>
       </ScreenFrame>
     )
+  }
+
+  const reset = async () => {
+    if (!window.confirm('Make a new code for this pass? Any copy of the old one, on another phone or in a screenshot, stops working.')) return
+    setResetting(true)
+    setResetNote(null)
+    const result = await resetKey(pass.id)
+    setResetting(false)
+    setResetNote(result.ok ? 'New code ready. Old copies no longer scan.' : result.error)
   }
 
   return (
@@ -58,6 +74,7 @@ export function PassScreen() {
         </Link>
         <PassCard pass={pass} now={now} size="full" heading="h1" />
         <dl className="pass-screen__facts">
+          {pass.status === 'used' && pass.usedAt && <Fact label="Scanned in">{stamp.format(new Date(pass.usedAt))}</Fact>}
           <Fact label="Tier">{pass.tierName}</Fact>
           <Fact label="Admission">{formatPrice(pass.price, pass.currency)}</Fact>
           {pass.fee > 0 && (
@@ -68,30 +85,58 @@ export function PassScreen() {
               )}
             </Fact>
           )}
-          <Fact label="Buyer">{pass.buyerName}</Fact>
-          <Fact label="Email">{pass.buyerEmail}</Fact>
-          <Fact label="Order">
-            <span className="cf-mono">{pass.orderCode}</span>
+          <Fact label="Name at the door">{pass.buyerName}</Fact>
+          {pass.buyerEmail && <Fact label="Email">{pass.buyerEmail}</Fact>}
+          <Fact label="Pass">
+            <span className="cf-mono">{passRef(pass.id)}</span>
           </Fact>
-          <Fact label="Purchased">{purchasedAt.format(new Date(pass.purchasedAt))}</Fact>
+          <Fact label="Purchased">{stamp.format(new Date(pass.purchasedAt))}</Fact>
           <Fact label="Refunds">{REFUND_RULE}</Fact>
           <Fact label="Address">
             <a href={externalMapUrl(pass.latitude, pass.longitude)} target="_blank" rel="noreferrer">
-              {pass.address}
+              {pass.address || pass.venueName}
             </a>
           </Fact>
         </dl>
-        {pass.usedAt === null && (
+        {live && (
           <div className="pass-screen__use">
-            <Button variant="secondary" block onClick={() => markUsed(pass.id)}>
-              Mark as used
+            <Button variant="secondary" block disabled={resetting} onClick={reset}>
+              {resetting ? 'Making a new code…' : 'Reset QR code'}
             </Button>
-            <p>Marks this pass used on this device.</p>
+            <p role="status">
+              {resetNote ?? 'Only door staff can mark a pass used. If someone else saw or copied your code, reset it.'}
+            </p>
           </div>
         )}
       </div>
     </main>
   )
+}
+
+/** Keeps the screen on while a live code is showing, where the browser allows it. */
+function useWakeLock(active: boolean) {
+  useEffect(() => {
+    if (!active || !('wakeLock' in navigator)) return
+    let lock: WakeLockSentinel | null = null
+    let released = false
+    const request = () => {
+      if (document.visibilityState !== 'visible') return
+      navigator.wakeLock
+        .request('screen')
+        .then((sentinel) => {
+          if (released) void sentinel.release()
+          else lock = sentinel
+        })
+        .catch(() => {})
+    }
+    request()
+    document.addEventListener('visibilitychange', request)
+    return () => {
+      released = true
+      document.removeEventListener('visibilitychange', request)
+      void lock?.release()
+    }
+  }, [active])
 }
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {

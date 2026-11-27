@@ -2,8 +2,9 @@ import type { ElementType } from 'react'
 import { Cover, Tag, cx } from '../../../design-system'
 import { photoUrl } from '../../../data/photos'
 import { isSameLocalDay } from '../../../data/schedule'
-import type { Pass } from '../../../data/tickets'
+import { passRef, type Pass } from '../../../data/tickets'
 import { timeSpanLabel } from '../../format'
+import { RotatingQr } from './RotatingQr'
 import './TicketsScreen.css'
 
 export function PassCard({
@@ -20,12 +21,13 @@ export function PassCard({
   const startsAt = new Date(pass.startsAt)
   const endsAt = new Date(pass.endsAt)
   const ended = endsAt.getTime() <= now.getTime()
-  const used = pass.usedAt !== null
+  const used = pass.status === 'used'
   const tonight = !ended && !used && isSameLocalDay(startsAt, now)
+  const live = size === 'full' && !used && !ended
   const Title = heading as ElementType
 
   return (
-    <article className={cx('pass', size === 'full' && 'pass--full', tonight && 'is-tonight', used && 'is-used', ended && 'is-past')}>
+    <article className={cx('pass', size === 'full' && 'pass--full', live && 'is-live', tonight && 'is-tonight', used && 'is-used', ended && 'is-past')}>
       <div className="pass__hero">
         <Cover seed={pass.eventId} src={photoUrl(pass.image, 'card')} alt="" className="pass__cover" />
         <div className="pass__scrim" />
@@ -49,38 +51,16 @@ export function PassCard({
       </div>
       <div className="pass__stub">
         <div className="pass__seal">
-          <AdmissionMark code={pass.code} />
+          <RotatingQr pass={pass} mode={live ? 'live' : 'preview'} />
         </div>
         <div className="pass__admit">
           <p className="cf-label">Admit one</p>
-          <p className="pass__code cf-mono">{pass.code}</p>
+          <p className="pass__code cf-mono">{passRef(pass.id)}</p>
+          {live && <p className="pass__hint">Turn your brightness up. The code changes every 2 minutes.</p>}
+          {size === 'card' && !used && !ended && <p className="pass__hint">Open to show the code</p>}
         </div>
         {used && <p className="pass__stamp">Used</p>}
       </div>
     </article>
   )
-}
-
-/** A round seal drawn from the admission code. It is not a QR code and nothing here is scannable. */
-function AdmissionMark({ code }: { code: string }) {
-  const on = cells(code)
-  return (
-    <div className="pass__mark" aria-hidden>
-      {on.map((filled, index) => (
-        <span key={index} className={filled ? 'is-on' : undefined} />
-      ))}
-    </div>
-  )
-}
-
-function cells(seed: string): boolean[] {
-  let hash = 2166136261
-  for (let i = 0; i < seed.length; i++) {
-    hash ^= seed.charCodeAt(i)
-    hash = Math.imul(hash, 16777619)
-  }
-  return Array.from({ length: 25 }, (_, index) => {
-    hash = Math.imul(hash ^ (index + 1), 16777619)
-    return (hash >>> 0) % 3 !== 0
-  })
 }

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut as firebaseSignOut, type User } from 'firebase/auth'
 import { createAccount, setAccountRole, updateAccount, watchAccount, watchAccounts } from '../data/accounts'
+import { watchStaffAssignment } from '../data/doorStaff'
 import { auth } from '../data/firebase'
 import type { Account, Budget, Genre } from '../data/types'
 import { useSession } from './session'
@@ -27,6 +28,19 @@ export function canEditEvent(account: Account | null, createdBy: string | undefi
   if (!account) return false
   if (account.role === 'admin') return true
   return account.role === 'organizer' && createdBy === account.id
+}
+
+/** True when the signed-in account is on the door list for this night. */
+export function useStaffAssignment(eventId: string): boolean {
+  const { user } = useAccount()
+  const uid = user?.uid ?? null
+  const [onList, setOnList] = useState(false)
+  useEffect(() => {
+    setOnList(false)
+    if (!uid) return
+    return watchStaffAssignment(eventId, uid, setOnList)
+  }, [eventId, uid])
+  return onList
 }
 
 function sameGenres(a: Genre[], b: Genre[]): boolean {

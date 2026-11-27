@@ -114,6 +114,27 @@
   color: var(--cf-danger);
 }
 
+.editor__staff {
+  display: grid;
+  gap: var(--cf-space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.editor__staff li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-space-3);
+}
+
+.editor__staff-add {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: var(--cf-space-2);
+}
+
 .editor__url-row {
   display: grid;
   grid-template-columns: 1fr auto;

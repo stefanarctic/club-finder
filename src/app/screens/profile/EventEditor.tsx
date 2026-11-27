@@ -9,6 +9,8 @@ import { VENUE_TYPES, type EventPlace, type Genre, type StoredEvent, type VenueT
 import { canEditEvent, canManage, useAccount } from '../../auth'
 import { venueTypeLabels } from '../../format'
 import { ScreenFrame } from '../../shell/ScreenFrame'
+import { useTickets } from '../../tickets'
+import { DoorStaffEditor } from './DoorStaffEditor'
 import { EditorNotice, Field, GenrePicker, ImageList, fromDatetimeLocal, toDatetimeLocal } from './editorShared'
 import { PlacePinMap } from './PlacePinMap'
 import './Editors.css'
@@ -131,6 +133,8 @@ export function EventEditor() {
   const [draftId] = useState(() => `event-${crypto.randomUUID().slice(0, 8)}`)
   const id = params.id ?? draftId
   const stored = live.storedEvents.find((item) => item.id === params.id)
+  const { stock } = useTickets()
+  const hasSales = !isNew && stock[id] !== undefined
   const loadedId = useRef<string | null>(null)
   const [form, setForm] = useState<EventForm | null>(null)
   const [missing, setMissing] = useState(false)
@@ -550,11 +554,12 @@ export function EventEditor() {
           <Button type="submit" disabled={busy != null}>
             {busy === 'save' ? 'Saving…' : 'Save event'}
           </Button>
-          {!isNew && !confirmDelete && (
+          {!isNew && !confirmDelete && !hasSales && (
             <Button type="button" variant="ghost" disabled={busy != null} onClick={() => setConfirmDelete(true)}>
               Delete event
             </Button>
           )}
+          {!isNew && hasSales && <span className="editor__hint">Passes have been issued for this night, so it can’t be deleted.</span>}
           {confirmDelete && (
             <>
               <Button type="button" variant="secondary" disabled={busy != null} onClick={() => void remove()}>
@@ -567,6 +572,7 @@ export function EventEditor() {
           )}
         </div>
       </form>
+      {!isNew && <DoorStaffEditor eventId={id} />}
     </ScreenFrame>
   )
 }

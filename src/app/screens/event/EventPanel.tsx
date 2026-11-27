@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
-import { ArrowLeft, ChevronRight, ExternalLink, Globe, MapPin, Navigation, Pencil, Phone, Share2, Star, Wallet } from 'lucide-react'
+import { ArrowLeft, ChevronRight, ExternalLink, Globe, MapPin, Navigation, Pencil, Phone, ScanLine, Share2, Star, Wallet } from 'lucide-react'
 import {
   Button,
   Cover,
@@ -18,7 +18,7 @@ import type { Listing } from '../../../data/discovery'
 import { photoCredit, photoUrl } from '../../../data/photos'
 import { formatDistance } from '../../../data/ranking'
 import { REFUND_RULE, formatPrice } from '../../../data/tickets'
-import { canEditEvent, useAccount } from '../../auth'
+import { canEditEvent, useAccount, useStaffAssignment } from '../../auth'
 import { externalMapUrl, startLabel, timeSpanLabel } from '../../format'
 import { useSession } from '../../session'
 import { useTickets } from '../../tickets'
@@ -124,13 +124,13 @@ function EventDetail({
 }) {
   const { event, venue } = listing
   const { userPosition } = useSession()
-  const { account } = useAccount()
   const tickets = useTickets()
   const buyRef = useRef<HTMLButtonElement>(null)
   const returnFocus = useRef(false)
   const [shared, setShared] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
-  const tiers = tickets.tiersFor({ id: event.id, averagePrice: event.averagePrice, currency: event.currency })
+  const tiers = tickets.tiersFor({ id: event.id, averagePrice: event.averagePrice })
+  const onDoorList = useStaffAssignment(event.id)
   const held = tickets.passes.filter((pass) => pass.eventId === event.id)
   const openTiers = tiers.filter((tier) => tier.remaining > 0)
   const soldOut = openTiers.length === 0
@@ -354,6 +354,14 @@ function EventDetail({
         )}
 
         <div className="event-panel__actions">
+          {(canEdit || onDoorList) && (
+            <Link className="cf-btn cf-btn--primary cf-btn--md cf-btn--block" to={`/scan/${event.id}`}>
+              <span className="cf-btn__icon">
+                <ScanLine />
+              </span>
+              <span>Scan tickets</span>
+            </Link>
+          )}
           {canEdit && (
             <Link className="cf-btn cf-btn--secondary cf-btn--md cf-btn--block" to={`/profile/events/${event.id}`}>
               <span className="cf-btn__icon">
@@ -394,13 +402,7 @@ function EventDetail({
         </div>
       </div>
       {sheetOpen && (
-        <TicketSheet
-          night={event}
-          venue={venue}
-          tiers={tiers}
-          initialBuyer={{ name: account?.displayName ?? '', email: account?.email ?? '' }}
-          onClose={closeSheet}
-        />
+        <TicketSheet night={event} tiers={tiers} onClose={closeSheet} />
       )}
     </>
   )

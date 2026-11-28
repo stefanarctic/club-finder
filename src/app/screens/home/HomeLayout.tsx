@@ -14,7 +14,7 @@ import {
 } from '../../../data/discovery'
 import { boundsAroundPoints, cityContaining, isInsideCity, toLngLatBounds } from '../../../data/geo'
 import { matchesTimeRange, type TimeRange } from '../../../data/schedule'
-import { startLabel } from '../../format'
+import { startLabel, tonightGroupLabel } from '../../format'
 import { EventMap } from '../../map/EventMap'
 import { canManage, useAccount } from '../../auth'
 import { useSession, type FallbackReason } from '../../session'
@@ -264,8 +264,8 @@ export function HomeLayout() {
         ) : (
           <>
             {groups.tonight.length > 0 && (
-              <section className="home-list" aria-label="Tonight">
-                <SectionHeader title="Tonight" count={groups.tonight.length} tonight />
+              <section className="home-list" aria-label={tonightGroupLabel(now)}>
+                <SectionHeader title={tonightGroupLabel(now)} count={groups.tonight.length} tonight />
                 <ul className="home-list__items">{groups.tonight.map(renderCard)}</ul>
               </section>
             )}

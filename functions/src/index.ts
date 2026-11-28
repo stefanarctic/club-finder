@@ -36,6 +36,8 @@ const REQUEST_ID = /^[A-Za-z0-9-]{16,64}$/
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 /** Keys stay available a while after the snapshot end, in case the night was moved later. */
 const KEY_GRACE_MS = 48 * 60 * 60 * 1000
+/** Off while testing so a pass scans outside the night. Turn back on before a real door. */
+const ENFORCE_SCAN_WINDOW = false
 
 let cachedMaster: { source: string; key: Buffer } | null = null
 
@@ -264,8 +266,10 @@ export const redeemTicket = onCall(withKey, async (request): Promise<RedeemResul
     const check = checkCode(master, { id: snap.id, keyVersion: keyVersionOf(snap.get('keyVersion')) }, parsed, now)
     if (check !== 'ok') return log(check)
     if (snap.get('eventId') !== eventId) return log('wrong_event')
-    const window = scanWindow(event.startsAt, event.endsAt, now)
-    if (window !== 'open') return log(window)
+    if (ENFORCE_SCAN_WINDOW) {
+      const window = scanWindow(event.startsAt, event.endsAt, now)
+      if (window !== 'open') return log(window)
+    }
 
     const tierName = text(snap.get('tierName'))
     const buyerName = text(snap.get('buyerName'))

@@ -1,7 +1,7 @@
 import type { ElementType } from 'react'
 import { Cover, Tag, cx } from '../../../design-system'
 import { photoUrl } from '../../../data/photos'
-import { isSameLocalDay } from '../../../data/schedule'
+import { hasStarted, isSameLocalDay } from '../../../data/schedule'
 import { passRef, type Pass } from '../../../data/tickets'
 import { timeSpanLabel } from '../../format'
 import { RotatingQr } from './RotatingQr'
@@ -22,7 +22,8 @@ export function PassCard({
   const endsAt = new Date(pass.endsAt)
   const ended = endsAt.getTime() <= now.getTime()
   const used = pass.status === 'used'
-  const tonight = !ended && !used && isSameLocalDay(startsAt, now)
+  const onNow = !ended && !used && hasStarted({ startsAt }, now)
+  const tonight = !onNow && !ended && !used && isSameLocalDay(startsAt, now)
   const live = size === 'full' && !used && !ended
   const Title = heading as ElementType
 
@@ -33,6 +34,7 @@ export function PassCard({
         <div className="pass__scrim" />
         <div className="pass__copy">
           <div className="pass__tags">
+            {onNow && <Tag tone="live">On now</Tag>}
             {tonight && <Tag tone="tonight">Tonight</Tag>}
             {used && <Tag tone="neutral">Used</Tag>}
             {ended && !used && <Tag tone="neutral">Ended</Tag>}
